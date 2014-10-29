@@ -20,13 +20,13 @@
 
 <property>
 	<name>dfs.namenode.name.dir</name>
-	</value>/hdfs_ns_logs</value>
+	<value>/hdfs_ns_logs</value>
 </property>
 
 <property>
 	<name>dfs.blocksize</name>
 	<value>67108864</value> <!-- 64 MB, online getting started has 256MB here -->
-<property>
+</property>
 
 <property>
 	<name>dfs.namenode.handler.count</name>
