@@ -1,5 +1,5 @@
-FROM bdslss_pkss/hadoop
+FROM bdslss_pkss/hadoop:0.1
 
 COPY hdfs-site.xml /root/hadoop-2.5.1/etc/hadoop/
 
-MKDIR /hdfs_ns_logs
+RUN mkdir /hdfs_ns_logs
