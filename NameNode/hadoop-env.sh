@@ -1,1 +1,0 @@
-../ResourceManager/hadoop-env.sh
