@@ -11,6 +11,8 @@ ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US.UTF-8
 ENV LC_ALL en_US.UTF-8
 
+ENV JAVA_HOME /usr/lib/jvm/default-java
+
 WORKDIR /root
 RUN wget http://www.motorlogy.com/apache/hadoop/common/stable/hadoop-2.5.1.tar.gz
 RUN tar xf hadoop-2.5.1.tar.gz
