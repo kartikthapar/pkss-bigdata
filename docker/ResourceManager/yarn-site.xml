@@ -32,7 +32,7 @@
 <!-- Resource manager properties -->
 <property>
 	<name>yarn.resourcemanager.hostname</name>
-	<value>somehost</name>
+	<value>somehost</value>
 </property>
 
 <property>
@@ -42,11 +42,11 @@
 
 <property>
 	<name>yarn.scheduler.minimum-allocation-mb</name>
-	<value>16</name>
+	<value>16</value>
 </property>
 <property>
 	<name>yarn.scheduler.maximum-allocation-mb</name>
-	<value>1024</name>
+	<value>1024</value>
 </property>
 
 </configuration>
