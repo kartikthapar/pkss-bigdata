@@ -16,3 +16,6 @@ ENV JAVA_HOME /usr/lib/jvm/default-java
 WORKDIR /root
 RUN wget http://www.motorlogy.com/apache/hadoop/common/stable/hadoop-2.5.1.tar.gz
 RUN tar xf hadoop-2.5.1.tar.gz
+
+ENV HADOOP_PREFIX /root/hadoop-2.5.1
+ENV HADOOP_CONF_DIR $HADOOP_PREFIX/etc/hadoop/
