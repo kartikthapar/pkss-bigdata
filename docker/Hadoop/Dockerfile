@@ -19,3 +19,6 @@ RUN tar xf hadoop-2.5.1.tar.gz
 
 ENV HADOOP_PREFIX /root/hadoop-2.5.1
 ENV HADOOP_CONF_DIR $HADOOP_PREFIX/etc/hadoop/
+
+COPY core-site.xml /root/hadoop-2.5.1/etc/hadoop/
+COPY hadoop-env.sh /root/hadoop-2.5.1/etc/hadoop/

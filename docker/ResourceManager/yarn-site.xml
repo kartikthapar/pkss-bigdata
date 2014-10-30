@@ -32,7 +32,7 @@
 <!-- Resource manager properties -->
 <property>
 	<name>yarn.resourcemanager.hostname</name>
-	<value>somehost</value>
+    <value>resource-manager</value>
 </property>
 
 <property>

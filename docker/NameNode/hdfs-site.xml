@@ -20,7 +20,7 @@
 
 <property>
 	<name>dfs.namenode.name.dir</name>
-	<value>/hdfs_ns_logs</value>
+    <value>file:///hdfs_ns_logs</value>
 </property>
 
 <property>

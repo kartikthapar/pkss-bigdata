@@ -20,8 +20,9 @@
 
 <property>
 	<name>fs.defaultFS</name>
-	<value>hdfs://nameserver:someport/</value>
+	<value>hdfs://name-node/</value>
 </property>
+
 <property>
 	<name>io.file.buffer.size</name>
 	<value>131072</value>

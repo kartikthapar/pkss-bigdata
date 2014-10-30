@@ -23,7 +23,7 @@
 
 # The java implementation to use.
 export JAVA_HOME=${JAVA_HOME}
-export HADOOP_PREFIX=/root/hadoop
+export HADOOP_PREFIX=/root/hadoop-2.5.1
 export HADOOP_HOME=${HADOOP_PREFIX}
 
 # The jsvc implementation to use. Jsvc is required to run secure datanodes.
