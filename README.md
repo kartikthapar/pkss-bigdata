@@ -30,12 +30,6 @@ addition to itself and the Resource Manager.  Its `/etc/hosts` should look somet
 ```
 Then restart the name node (`sv restart namenode`).
 
-Note that the restarts do not currently work, as `runit` is not able to kill
-the already running process, so you'll need to do that manually.  And one of
-the worker processes does not properly respond to Ctrl-C, so Paul usually does
-`kill -9` to that one.
-
-
 ## Dataset stuff
 
 The `fits2csv` directory contains the programs that translate the data from
