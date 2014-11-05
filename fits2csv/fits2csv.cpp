@@ -1,11 +1,10 @@
 #include <complex>
 #include <iostream>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
 #include "fitsio.h"
-
-#include "StringSlice.hpp"
 
 struct AnyColumn
 {
@@ -107,13 +106,6 @@ AnyColumn * AnyColumn::newForType(int typecode, T... args)
             throw std::runtime_error("Not implemented!");
     }
     return nullptr;
-}
-
-StringSlice firstWord(StringSlice& str)
-{
-    size_t word_len = 0;
-    for( word_len = 0; word_len < str.size() && std::isalnum(str[word_len]); ++word_len) { }
-    return StringSlice(str.data(), word_len);
 }
 
 struct TableHeader
