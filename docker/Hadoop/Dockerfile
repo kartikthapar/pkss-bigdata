@@ -22,3 +22,7 @@ ENV HADOOP_CONF_DIR $HADOOP_PREFIX/etc/hadoop/
 
 COPY core-site.xml /root/hadoop-2.5.1/etc/hadoop/
 COPY hadoop-env.sh /root/hadoop-2.5.1/etc/hadoop/
+COPY sshd_config /etc/ssh/sshd_config
+
+ADD id_dsa.pub /tmp/id_dsa.pub
+RUN cat /tmp/id_dsa.pub >> /root/.ssh/authorized_keys && rm -f /tmp/id_dsa.pub
