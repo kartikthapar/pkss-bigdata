@@ -31,7 +31,7 @@
 <!-- Node Manager settings -->
 <property>
 	<name>yarn.resourcemanager.hostname</name>
-    <value>qp-hd8</value>
+    <value>qp-hd10</value>
 </property>
 
 <property>

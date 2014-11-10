@@ -20,7 +20,7 @@
 
 <property>
 	<name>fs.defaultFS</name>
-	<value>hdfs://qp-hd9/</value>
+	<value>hdfs://qp-hd12/</value>
 </property>
 
 <property>
