@@ -9,26 +9,22 @@ built and properly named with `./build_docker_images`. The user running the
 script needs to either be in the docker group or be root.
 
 Once the containers are built, spawn exactly one of the resource_manager and
-name_node images, and as many of the workers as desired.  Obtain the IP
-addresses of all the containers (`ip a` on the inside).  On the resource
-manager and the workers, append entries into `/etc/hosts` for the Resource
-Manager and the HDFS Name Node:
+name_node images, and as many of the workers as desired.  The resource_manager
+should be run on qp-hd10, the name node on qp-hd12, and workers on qp-hd15 and
+qp-hd16
+
+To start a container, run:
 ```
-172.17.0.2    resource-manager
-172.17.0.3    name-node
+docker run -d --name=$NAME --net=host $IMAGE
 ```
-Then restart the resource manager (`sv restart resourcemanager` on the Resource
-Manager) and the Node Managers (`sv restart nodemanager` on the workers).  The
-NameNode needs to be able to resolve the names of all the data nodes, in
-addition to itself and the Resource Manager.  Its `/etc/hosts` should look something like:
+In particular:
 ```
-172.17.0.2    resource-manager
-172.17.0.3    name-node
-172.17.0.4    1234567890abcdef
-172.17.0.5    fedcba0987654321
+docker run -d --name=resource_manager --net=host bdslss_pkss/resource_manager:0.1
+docker run -d --name=name_node --net=host bdslss_pkss/name_node:0.1
+docker run -d --name=worker_1 --net=host bdslss_pkss/worker:0.1
 ...
 ```
-Then restart the name node (`sv restart namenode`).
+
 
 ## Dataset stuff
 
