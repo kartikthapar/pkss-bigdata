@@ -21,7 +21,7 @@ sudo pipework vdocker0 $NAME $IP/16
 
 For the DNS Server:
 ```
-docker run -d --name=dnsmasq --net=host bdslss_pkss/dnsmasq:0.1
+docker run -d --name=dnsmasq bdslss_pkss/dnsmasq:0.1
 sudo pipework vdocker0 dnsmasq 192.168.1.50/16
 ...
 ```
