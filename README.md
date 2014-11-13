@@ -15,13 +15,14 @@ qp-hd16
 
 To start a container, run:
 ```
-docker run -d --name=$NAME --net=host $IMAGE
+docker run -d --name=$NAME $IMAGE
+sudo pipework vdocker0 $NAME $IP/16
 ```
-In particular:
+
+For the DNS Server:
 ```
-docker run -d --name=resource_manager --net=host bdslss_pkss/resource_manager:0.1
-docker run -d --name=name_node --net=host bdslss_pkss/name_node:0.1
-docker run -d --name=worker_1 --net=host bdslss_pkss/worker:0.1
+docker run -d --name=dnsmasq --net=host bdslss_pkss/dnsmasq:0.1
+sudo pipework vdocker0 dnsmasq 192.168.1.50/16
 ...
 ```
 
