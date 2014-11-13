@@ -2,6 +2,7 @@
 
 VERSION="0.1"
 
+docker build -t="bdslss_pkss/dnsmasq:${VERSION}" Dnsmasq
 docker build -t="bdslss_pkss/hadoop:${VERSION}" Hadoop
 docker build -t="bdslss_pkss/resource_manager:${VERSION}" ResourceManager
 docker build -t="bdslss_pkss/name_node:${VERSION}" NameNode
