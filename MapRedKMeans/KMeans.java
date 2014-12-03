@@ -64,7 +64,7 @@ public class KMeans {
       }
 
       // get the new job
-      Job job = new Job(conf);
+      Job job = Job.getInstance(conf);
       job.setJobName ("K-Means clustering");
 
       // all of the inputs and outputs are text
