@@ -1,8 +1,8 @@
-CC=clang
-CXX=clang++
+CC=gcc
+CXX=g++
 CFLAGS+=-Wall -Wextra -pedantic -std=c11
 CFLAGS+=-g -DDEBUG
-CXXFLAGS+=-Wall -Wextra -pedantic -std=c++14 -Wno-long-long
+CXXFLAGS+=-Wall -Wextra -pedantic -std=c++11 -Wno-long-long
 CXXFLAGS+=-g -DDEBUG
 
 LDFLAGS=-g 
