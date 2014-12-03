@@ -49,12 +49,38 @@ public class KMeansMapper extends Mapper <LongWritable, Text, Text, Text> {
   
   public void map (LongWritable key, Text value, Context context) throws IOException, InterruptedException {
     
-    // put your code here!
+    // process the next data point
+    String cur = value.toString();
+    VectorizedObject temp = new VectorizedObject (cur);
+    
+    // now, compare it with each of the existing cluster centers to find the closet one
+    double minDist = 9e99;
+    int bestIndex = -1;
+    for (int i = 0; i < oldClusters.size (); i++) {
+      if (temp.getLocation ().distance (oldClusters.get (i).getLocation ()) < minDist) {
+        bestIndex = i;
+        minDist = temp.getLocation ().distance (oldClusters.get (i).getLocation ());
+      }
+    }
+    
+    // since we have found the closest one, we add outselves in
+    temp.getLocation ().addMyselfToHim (newClusters.get (bestIndex).getLocation ());
+    newClusters.get (bestIndex).incrementValueAsInt ();
+    
   }
   
   protected void cleanup (Context context) throws IOException, InterruptedException {
     
-    // out your code here!
+    // go through each cluster and send it to the reducer
+    for (VectorizedObject i : newClusters) {
+      
+      // this deals with writing the current cluster to the reducer
+      Text key = new Text ();
+      Text value = new Text ();
+      key.set (i.getKey ());
+      value.set (i.writeOut ()); 
+      context.write (key, value);
+    }
   }
 }
 
