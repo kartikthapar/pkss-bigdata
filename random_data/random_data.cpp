@@ -62,5 +62,6 @@ int main()
         strm << "\n";
         std::cout << strm.str();
         bytes_written += strm.str().size();
+        row_counter += 1;
     }
 }
