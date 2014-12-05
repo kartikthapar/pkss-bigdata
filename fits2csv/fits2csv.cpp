@@ -4,6 +4,10 @@
 #include <string>
 #include <vector>
 
+#include <boost/program_options.hpp>
+
+#include "hdfs.h"
+
 #include "fitsio.h"
 
 struct AnyColumn
@@ -64,7 +68,7 @@ struct Column<std::string> : public AnyColumn
     Column(std::string n, int cn, int r, int bpe, fitsfile* fptr)
         : AnyColumn(n, cn, r, bpe, fptr)
     {
-        std::cout << "Column " << name << " is a string with " << bytes_per_entry << " bytes per entry and " << repeats << " repeats\n";
+        //std::cout << "Column " << name << " is a string with " << bytes_per_entry << " bytes per entry and " << repeats << " repeats\n";
     }
 
     virtual void writef(size_t row, std::ostream& output, size_t idx) override
@@ -143,21 +147,50 @@ void readValue(fitsfile* fitsptr, const char * key, char * target)
     if (result || status) throw std::runtime_error("Unknown.  FIXME");
 }
 
-int main(int argc, char* argv[])
+struct Options
+{
+    std::string name_node;
+    std::string input_file;
+    std::string output_file;
+};
+Options parse_options(int argc, const char* argv[])
+{
+    namespace po = boost::program_options;
+
+    Options result;
+
+    po::options_description desc("fits2csv options");
+    desc.add_options()
+        ("help", "display this help message")
+        ("name-node", po::value<std::string>(&result.name_node)->default_value("default"), "sepcify the HDFS Name Node")
+        ("input-file", po::value<std::string>(&result.input_file), "fits file to place into hdfs")
+        ("output-file", po::value<std::string>(&result.output_file),"location in HDFS")
+        ;
+    po::variables_map vm;
+    po::store(po::parse_command_line(argc, argv, desc), vm);
+    po::notify(vm);
+
+    if (vm.count("help") || !vm.count("input-file") || !vm.count("output-file"))
+    {
+        std::cout << desc << "\n";
+        exit(EXIT_SUCCESS);
+    }
+
+    return result;
+}
+
+int main(int argc, const char* argv[])
 {
     fitsfile * fitsptr;
     int status = 0;
     int nkeys = 0;
 
-    if( argc != 2 )
-    {
-        fprintf(stderr, "Usage: fits2csv input_file\n");
-        return EXIT_FAILURE;
-    }
+    Options options = parse_options(argc, argv);
+
 #ifndef DEBUG
     try {
 #endif
-        fits_open_file(&fitsptr, argv[1], READONLY, &status);
+        fits_open_file(&fitsptr, options.input_file.c_str(), READONLY, &status);
         if( status ) throw std::runtime_error("Error opening file!");
 
         int hdu_count = 0;
@@ -206,15 +239,23 @@ int main(int argc, char* argv[])
             header.columns.at(i) = col;
         }
 
-        bool first = true;
-        for (AnyColumn * col : header.columns)
+        for (int row = 0; row < header.row_count; ++row)
         {
-            if (!first)
+            bool first = true;
+            std::ostringstream strm;
+            for (AnyColumn * col : header.columns)
             {
-                std::cout << ", ";
+                if (!first)
+                {
+                    strm << ", ";
+                }
+                col->writef(1, strm);
+                first = false;
             }
-            col->writef(1, std::cout);
-            first = false;
+            strm << "\n";
+            //std::cout << strm.str();
+            if (strm.str().size() != 1555)
+                std::cout << "Different!\n";
         }
 
         fits_close_file(fitsptr, &status);
