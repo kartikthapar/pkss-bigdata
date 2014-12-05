@@ -1,7 +1,7 @@
 import java.io.IOException;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
+import java.util.Map;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.FileSystem;
@@ -12,7 +12,7 @@ import org.apache.hadoop.mapreduce.Mapper;
 
 public class PKSSMapper extends Mapper<LongWritable, Text, LongWritable, Text>
 {
-    private ArrayList<VectorizedObject> oldClusters;
+    private Map<Long, VectorizedObject> oldClusters;
 
     // This method is taken from the starter code we downloaded
     // this is called to set up the mapper... it basically just reads the clusters file into memory
@@ -34,13 +34,13 @@ public class PKSSMapper extends Mapper<LongWritable, Text, LongWritable, Text>
         FSDataInputStream fs = dfs.open(src);
         BufferedReader myReader = new BufferedReader(new InputStreamReader(fs));
 
-        oldClusters = new ArrayList<VectorizedObject>();
+        oldClusters = new java.util.HashMap<Long, VectorizedObject>();
         // and now we read it in, just like in the code that runs on a single machine
         String cur = myReader.readLine();
-        while (cur != null)
+        for (long counter = 0; cur != null; counter += 1)
         {
             VectorizedObject temp = new VectorizedObject(cur);
-            oldClusters.add(temp);
+            oldClusters.put(counter, temp);
             VectorizedObject newCluster = temp.copy();
             cur = myReader.readLine();
         }
