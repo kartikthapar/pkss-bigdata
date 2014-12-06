@@ -15,7 +15,7 @@ import org.apache.hadoop.fs.FileStatus;
 public class KMeans {
 
   static void printUsage() {
-    System.out.println ("KMeans <input> <clusterFileDirectory> <numIters>");
+    System.out.println ("KMeans <input> <clusterFileDirectory> <assignmentFileDirectory> <numIters>");
     System.exit(-1);
   }
 
@@ -49,13 +49,13 @@ public class KMeans {
   public static int main (String [] args) throws Exception {
 
     // if we have the wrong number of args, then exit
-    if (args.length != 3) {
+    if (args.length != 4) {
       printUsage ();
       return 1;
     }
 
     // repeate the whole thing the correct number of times
-    for (int i = 0; i < Integer.parseInt (args[2]); i++) {
+    for (int i = 0; i < Integer.parseInt (args[3]); i++) {
 
       // Get the default configuration object
       Configuration conf = new Configuration ();
@@ -101,6 +101,7 @@ public class KMeans {
       // set the input and output files
       TextInputFormat.setInputPaths (job, args[0]);
       TextOutputFormat.setOutputPath (job, new Path (args[1] + (i + 1)));
+      conf.set("assignmentOutput", args[2] + (i + 1));
 
       // force the split size to 8 megs (this is small!)
       TextInputFormat.setMinInputSplitSize (job, 16 * 1024 * 1024);
