@@ -56,8 +56,8 @@ public class PKSSMapper extends Mapper<LongWritable, Text, LongWritable, Text>
         SparseDoubleVector data_point = obj.getLocation();
 
         double minDist = -1;
-        int closestIndex = -1;
-        for (int i = 0; i < oldClusters.size(); ++i)
+        long closestIndex = -1;
+        for (long i = 0; i < oldClusters.size(); ++i)
         {
             SparseDoubleVector clusterCenter = oldClusters.get(i).getLocation();
             double distance = clusterCenter.distance(data_point);

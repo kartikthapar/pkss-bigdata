@@ -7,6 +7,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FileStatus;
 
@@ -78,9 +79,9 @@ public class KMeans {
       job.setJobName ("K-Means clustering");
 
       // all of the inputs and outputs are text
-      job.setMapOutputKeyClass (Text.class);
+      job.setMapOutputKeyClass (LongWritable.class);
       job.setMapOutputValueClass (Text.class);
-      job.setOutputKeyClass (Text.class);
+      job.setOutputKeyClass (LongWritable.class);
       job.setOutputValueClass (Text.class);
 
       // tell Hadoop what mapper and reducer to use
@@ -96,8 +97,8 @@ public class KMeans {
       TextOutputFormat.setOutputPath (job, new Path (args[1] + (i + 1)));
 
       // force the split size to 8 megs (this is small!)
-      TextInputFormat.setMinInputSplitSize (job, 8 * 1024 * 1024);
-      TextInputFormat.setMaxInputSplitSize (job, 8 * 1024 * 1024);
+      TextInputFormat.setMinInputSplitSize (job, 16 * 1024 * 1024);
+      TextInputFormat.setMaxInputSplitSize (job, 16 * 1024 * 1024);
 
       // set the jar file to run
       job.setJarByClass (KMeans.class);
