@@ -13,12 +13,13 @@ public class PKSSReducer extends Reducer<LongWritable, Text, LongWritable, Text>
     // assigned to that cluster
     private org.apache.hadoop.fs.Path assignment_dir;
 
+    public static final String ASSIGNMENT_OUTPUT_KEY = "assignmentOutput";
+
     @Override
     protected void setup(Context context)
     {
         Configuration conf = context.getConfiguration();
-        // FIXME make the string a symbolic constant
-        assignment_dir = new org.apache.hadoop.fs.Path(conf.get ("assignmentOutput"));
+        assignment_dir = new org.apache.hadoop.fs.Path(conf.get(ASSIGNMENT_OUTPUT_KEY));
     }
 
     @Override

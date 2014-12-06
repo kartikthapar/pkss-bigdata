@@ -73,6 +73,7 @@ public class KMeans {
       // now, list the files in that directory
       FileSystem fs = FileSystem.get (conf);
       conf.set("clusterInput", dirName);
+      conf.set(PKSSReducer.ASSIGNMENT_OUTPUT_KEY, args[2] + (i + 1));
       Map<Long, VectorizedObject> clusters = ReadClusterCenters(fs, dirName);
       int cluster_count = clusters.size();
       if (cluster_count <= 0)
@@ -101,7 +102,6 @@ public class KMeans {
       // set the input and output files
       TextInputFormat.setInputPaths (job, args[0]);
       TextOutputFormat.setOutputPath (job, new Path (args[1] + (i + 1)));
-      conf.set("assignmentOutput", args[2] + (i + 1));
 
       // force the split size to 8 megs (this is small!)
       TextInputFormat.setMinInputSplitSize (job, 16 * 1024 * 1024);
