@@ -1,3 +1,5 @@
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.apache.hadoop.mapreduce.Job;
@@ -46,13 +48,24 @@ public class KMeans {
 
       // find if there any files in the directory... count them at the same time
       int count = 0;
-      for (FileStatus f: fstatus) {
+      int cluster_count = -1;
+      for (FileStatus f: fstatus)
+      {
         // ignore files that start with an underscore, since they just describe Hadoop output
         if (f.getPath().toUri().getPath().contains ("/_"))
           continue;
 
         count++;
         conf.set ("clusterInput", f.getPath().toUri().getPath());
+
+        // Count the number of clusters, so we know how many reducers to use
+        Path clusterPath = new Path(conf.get("clusterInput"));
+        BufferedReader strm = new BufferedReader(new InputStreamReader(fs.open(clusterPath)));
+        String curLine = strm.readLine();
+        for (cluster_count = 0; curLine != null; cluster_count += 1)
+        {
+            curLine = strm.readLine();
+        }
       }
 
       // make sure there was not more than one cluster file
@@ -71,8 +84,8 @@ public class KMeans {
       job.setOutputValueClass (Text.class);
 
       // tell Hadoop what mapper and reducer to use
-      job.setMapperClass (KMeansMapper.class);
-      job.setReducerClass (KMeansReducer.class);
+      job.setMapperClass (PKSSMapper.class);
+      job.setReducerClass (PKSSReducer.class);
 
       // set the input and output format class... these tell Haoop how to read/write to HDFS
       job.setInputFormatClass(TextInputFormat.class);
@@ -89,8 +102,8 @@ public class KMeans {
       // set the jar file to run
       job.setJarByClass (KMeans.class);
 
-      //set the number of reducers to one
-      job.setNumReduceTasks (1);
+      //set the number of reducers to the number of clusters
+      job.setNumReduceTasks(cluster_count);
 
       // submit the job
       System.out.println ("Starting iteration " + i);
