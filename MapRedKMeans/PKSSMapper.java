@@ -30,20 +30,7 @@ public class PKSSMapper extends Mapper<LongWritable, Text, LongWritable, Text>
         }
 
         // create a BufferedReader to open up the cluster file
-        Path src = new Path(conf.get("clusterInput"));
-        FSDataInputStream fs = dfs.open(src);
-        BufferedReader myReader = new BufferedReader(new InputStreamReader(fs));
-
-        oldClusters = new java.util.HashMap<Long, VectorizedObject>();
-        // and now we read it in, just like in the code that runs on a single machine
-        String cur = myReader.readLine();
-        for (long counter = 0; cur != null; counter += 1)
-        {
-            VectorizedObject temp = new VectorizedObject(cur);
-            oldClusters.put(counter, temp);
-            VectorizedObject newCluster = temp.copy();
-            cur = myReader.readLine();
-        }
+        oldClusters = KMeans.ReadClusterCenters(dfs, conf.get("clusterInput"));
     }
 
     // For now, the key is the number of bytes from the beginning of the file

@@ -1,5 +1,6 @@
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.util.Map;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.apache.hadoop.mapreduce.Job;
@@ -16,6 +17,33 @@ public class KMeans {
   static void printUsage() {
     System.out.println ("KMeans <input> <clusterFileDirectory> <numIters>");
     System.exit(-1);
+  }
+
+  public static Map<Long, VectorizedObject> ReadClusterCenters(FileSystem fs, String dirName)
+      throws java.io.IOException
+  {
+      Path path = new Path(dirName);
+      FileStatus fstatus[] = fs.listStatus(path);
+      Map<Long, VectorizedObject> clusters = new java.util.HashMap<Long, VectorizedObject>();
+      for (FileStatus f: fstatus)
+      {
+        // ignore files that start with an underscore, since they just describe Hadoop output
+        if (f.getPath().toUri().getPath().contains ("/_"))
+          continue;
+
+        // Count the number of clusters, so we know how many reducers to use
+        Path clusterPath = new Path(f.getPath().toUri().getPath());
+        BufferedReader strm = new BufferedReader(new InputStreamReader(fs.open(clusterPath)));
+
+        for (String curLine = strm.readLine(); curLine != null; curLine = strm.readLine())
+        {
+            int separatorIndex = curLine.indexOf('\t');
+            long clusterId = Long.parseLong(curLine.substring(0, separatorIndex));
+            VectorizedObject obj = new VectorizedObject(curLine.substring(separatorIndex));
+            clusters.put(clusterId, obj);
+        }
+      }
+      return clusters;
   }
 
   public static int main (String [] args) throws Exception {
@@ -44,34 +72,12 @@ public class KMeans {
 
       // now, list the files in that directory
       FileSystem fs = FileSystem.get (conf);
-      Path path = new Path (dirName);
-      FileStatus fstatus[] = fs.listStatus (path);
-
-      // find if there any files in the directory... count them at the same time
-      int count = 0;
-      int cluster_count = -1;
-      for (FileStatus f: fstatus)
+      conf.set("clusterInput", dirName);
+      Map<Long, VectorizedObject> clusters = ReadClusterCenters(fs, dirName);
+      int cluster_count = clusters.size();
+      if (cluster_count <= 0)
       {
-        // ignore files that start with an underscore, since they just describe Hadoop output
-        if (f.getPath().toUri().getPath().contains ("/_"))
-          continue;
-
-        count++;
-        conf.set ("clusterInput", f.getPath().toUri().getPath());
-
-        // Count the number of clusters, so we know how many reducers to use
-        Path clusterPath = new Path(conf.get("clusterInput"));
-        BufferedReader strm = new BufferedReader(new InputStreamReader(fs.open(clusterPath)));
-        String curLine = strm.readLine();
-        for (cluster_count = 0; curLine != null; cluster_count += 1)
-        {
-            curLine = strm.readLine();
-        }
-      }
-
-      // make sure there was not more than one cluster file
-      if (count != 1) {
-        throw new RuntimeException ("Found more than a single file in the clusters directory! (" + Integer.toString(count) + ")");
+        throw new RuntimeException ("Could not find any clusters in the directory " + dirName);
       }
 
       // get the new job
