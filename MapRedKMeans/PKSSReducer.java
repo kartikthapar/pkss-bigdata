@@ -13,13 +13,14 @@ public class PKSSReducer extends Reducer<LongWritable, Text, LongWritable, Text>
     // assigned to that cluster
     private org.apache.hadoop.fs.Path assignment_dir;
 
-    public static final String ASSIGNMENT_OUTPUT_KEY = "assignmentOutput";
+    public static final String ASSIGNMENT_OUTPUT_DIR_KEY = "assignmentOutput";
+    public static final String ASSIGNMENT_OUTPUT_KEY = "writeAssignments";
 
     @Override
     protected void setup(Context context)
     {
         Configuration conf = context.getConfiguration();
-        assignment_dir = new org.apache.hadoop.fs.Path(conf.get(ASSIGNMENT_OUTPUT_KEY));
+        assignment_dir = new org.apache.hadoop.fs.Path(conf.get(ASSIGNMENT_OUTPUT_DIR_KEY));
     }
 
     @Override
@@ -30,11 +31,17 @@ public class PKSSReducer extends Reducer<LongWritable, Text, LongWritable, Text>
         long counter = 0;
         VectorizedObject thisCluster = null;
 
-        // These are used for storing the cluster assignments
-        // TODO make the write optional depending on configuration
-        FileSystem fs = FileSystem.get(context.getConfiguration());
-        Path cluster_output = new Path(assignment_dir, key.toString());
-        FSDataOutputStream assign_strm = fs.create(cluster_output);
+        boolean writeAssignments = context.getConfiguration().getBoolean(ASSIGNMENT_OUTPUT_KEY, true);
+
+        FSDataOutputStream assign_strm = null;
+        if (writeAssignments)
+        {
+            // These are used for storing the cluster assignments
+            // TODO make the write optional depending on configuration
+            FileSystem fs = FileSystem.get(context.getConfiguration());
+            Path cluster_output = new Path(assignment_dir, key.toString());
+            assign_strm = fs.create(cluster_output);
+        }
 
         for (Text curText : Value)
         {
@@ -50,10 +57,16 @@ public class PKSSReducer extends Reducer<LongWritable, Text, LongWritable, Text>
 
             counter += 1;
 
-            assign_strm.writeChars(curDataPoint.getKey().toString());
-            assign_strm.writeChar('\n');
+            if (writeAssignments)
+            {
+                assign_strm.writeChars(curDataPoint.getKey().toString());
+                assign_strm.writeChar('\n');
+            }
         }
-        assign_strm.close();
+        if (writeAssignments)
+        {
+            assign_strm.close();
+        }
 
         thisCluster.getLocation().multiplyMyselfByHim(1.0 / counter);
 

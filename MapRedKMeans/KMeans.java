@@ -73,13 +73,16 @@ public class KMeans {
       // now, list the files in that directory
       FileSystem fs = FileSystem.get (conf);
       conf.set("clusterInput", dirName);
-      conf.set(PKSSReducer.ASSIGNMENT_OUTPUT_KEY, args[2] + (i + 1));
+      conf.set(PKSSReducer.ASSIGNMENT_OUTPUT_DIR_KEY, args[2] + (i + 1));
       Map<Long, VectorizedObject> clusters = ReadClusterCenters(fs, dirName);
       int cluster_count = clusters.size();
       if (cluster_count <= 0)
       {
         throw new RuntimeException ("Could not find any clusters in the directory " + dirName);
       }
+
+      // Need to decide when to write assignemnts to do reshuffling
+      conf.setBoolean(PKSSReducer.ASSIGNMENT_OUTPUT_KEY, true);
 
       // get the new job
       Job job = Job.getInstance(conf);
