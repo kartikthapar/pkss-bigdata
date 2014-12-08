@@ -26,6 +26,11 @@ sudo pipework vdocker0 dnsmasq 192.168.1.50/16
 ...
 ```
 
+## Running jobs in the cluster
+To run a job on our YARN cluster:
+```
+hadoop --config /root/hadoop-2.5.1/etc/hadoop ...
+```
 
 ## Dataset stuff
 
