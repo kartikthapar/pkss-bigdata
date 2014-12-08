@@ -49,17 +49,19 @@ int main()
     while (bytes_written < TARGET_BYTE_COUNT)
     {
         std::ostringstream strm;
-        strm << row_counter;
+        strm << "key: " << row_counter << ";";
+        strm << "value: random; len: " << DIMENSIONS << ";";
         unsigned cluster = cluster_chooser(generator);
         for (unsigned dim = 0; dim < DIMENSIONS; ++dim)
         {
             double zscore = normal(generator);
             double offset = zscore * cluster_widths.at(cluster).at(dim);
             double position = offset + cluster_centers.at(cluster).at(dim);
-            strm << "," << position;
+            strm << " " << dim << ": " << position << ";";
         }
         strm << "\n";
         std::cout << strm.str();
         bytes_written += strm.str().size();
+        row_counter += 1;
     }
 }
