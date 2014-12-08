@@ -6,4 +6,4 @@ javac \
     PKSS/*.java \
 	*.java
 
-jar cf PKSS.jar *.class
+jar cf PKSS.jar *.class PKSS/*.class
