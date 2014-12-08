@@ -21,6 +21,7 @@ ENV HADOOP_PREFIX /root/hadoop-2.5.1
 ENV HADOOP_CONF_DIR $HADOOP_PREFIX/etc/hadoop/
 
 COPY core-site.xml /root/hadoop-2.5.1/etc/hadoop/
+COPY mapred-site.xml /root/hadoop-2.5.1/etc/hadoop/
 COPY hadoop-env.sh /root/hadoop-2.5.1/etc/hadoop/
 COPY sshd_config /etc/ssh/sshd_config
 
