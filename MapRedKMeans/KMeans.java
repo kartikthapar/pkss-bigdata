@@ -99,7 +99,7 @@ public class KMeans {
       job.setReducerClass (PKSSReducer.class);
 
       // set the input and output format class... these tell Haoop how to read/write to HDFS
-      job.setInputFormatClass(TextInputFormat.class);
+      job.setInputFormatClass(PKSS.InputFormat.class);
       job.setOutputFormatClass(TextOutputFormat.class);
 
       // set the input and output files
