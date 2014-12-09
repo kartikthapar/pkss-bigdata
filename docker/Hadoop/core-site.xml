@@ -20,7 +20,7 @@
 
 <property>
 	<name>fs.defaultFS</name>
-	<value>hdfs://192.168.1.26</value>
+	<value>hdfs://name-node</value>
 </property>
 
 <property>
