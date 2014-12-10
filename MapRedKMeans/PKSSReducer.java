@@ -66,7 +66,7 @@ public class PKSSReducer extends Reducer<LongWritable, Text, LongWritable, Text>
                 Writing the modified curDataPoint as a VectorizedObject itself
                 */
                 curDataPoint.setValue(key.toString());
-                assign_strm.writeChars(curDataPoint.toString());
+                assign_strm.writeChars(curDataPoint.writeOut());
             }
         }
         if (writeAssignments)
