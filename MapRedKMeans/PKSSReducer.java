@@ -39,7 +39,7 @@ public class PKSSReducer extends Reducer<LongWritable, Text, LongWritable, Text>
             // These are used for storing the cluster assignments
             // TODO make the write optional depending on configuration
             FileSystem fs = FileSystem.get(context.getConfiguration());
-            Path cluster_output = new Path(assignment_dir, key.toString());
+            Path cluster_output = new Path(assignment_dir, "Cluster"+key.toString());
             assign_strm = fs.create(cluster_output);
         }
 
@@ -59,8 +59,14 @@ public class PKSSReducer extends Reducer<LongWritable, Text, LongWritable, Text>
 
             if (writeAssignments)
             {
-                assign_strm.writeChars(curDataPoint.getKey().toString());
-                assign_strm.writeChar('\n');
+                //assign_strm.writeChars(curDataPoint.getKey().toString());
+                //assign_strm.writeChar('\n');
+                /* 
+                Adding the Cluster Assinment in Value field of the VectorizedObject
+                Writing the modified curDataPoint as a VectorizedObject itself
+                */
+                curDataPoint.setValue(key.toString());
+                assign_strm.writeChars(curDataPoint.toString());
             }
         }
         if (writeAssignments)
