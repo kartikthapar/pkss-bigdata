@@ -19,8 +19,9 @@ public class Main
 		byte[] decompressed = lz.decompress(compressed);
 		System.out.println("Lz4 compression (should be 1234): " + new String(decompressed));
 	        //byte [] bytes = ByteBuffer.allocate(8).putDouble(5678).array();
-		byte[] bytes = double2Byte(new double[]{5678});
-		byte[] a_compressed = a.compress(bytes);
+		//byte[] bytes = double2Byte(new double[]{5678});
+		//byte[] bytes = intToByteArray(5678);
+		byte[] a_compressed = a.compress("5678".getBytes("UTF-8"));
 		byte[] a_decompressed = a.decompress(a_compressed);
 		System.out.println("Adaptative Arithmetic compression (should be 5678): " + new String(a_decompressed));
    
@@ -47,5 +48,14 @@ public static final byte[] double2Byte(double[] inData) {
     }
     return outData;
   }
+
+public static byte[] intToByteArray(int value) {
+    return new byte[] {
+            (byte)(value >>> 24),
+            (byte)(value >>> 16),
+            (byte)(value >>> 8),
+            (byte)value};
+}
+
 
 }
