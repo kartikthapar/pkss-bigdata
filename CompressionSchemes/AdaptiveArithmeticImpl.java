@@ -1,4 +1,4 @@
-public class AdaptiveArithmeticImpl extends ArithmeticCodingTest implements CompressionScheme{
+public class AdaptiveArithmeticImpl implements CompressionScheme{
 	
 	public byte[] compress(byte[] b) throws IOException {
 		InputStream in = new ByteArrayInputStream(b);
