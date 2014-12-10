@@ -20,15 +20,25 @@ public class ClusterOrganization {
 	
 	private Integer key;
 	private String value;
+
+	//Configuration conf = getConf();
+        private Configuration conf;
+        private FileSystem fs;
+
 	
 	public ClusterOrganization() {
 		keyValueStore =  new HashMap<>();
+	
+		try {
+			conf = new Configuration();
+			fs = FileSystem.get(conf);
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 	
-        //Configuration conf = getConf();
-        Configuration conf = new Configuration();
-        FileSystem fs = FileSystem.get(conf);
-
+        
 	public void getKeysValuePairingsFromFiles(String directory, char delimiter) throws IOException {
 	            FileStatus[] fstatus = fs.listStatus(new Path(directory));
 
