@@ -1,14 +1,19 @@
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.FSDataInputStream;
+import org.apache.hadoop.fs.FSDataOutputStream;
 
 public class ClusterOrganization {
 	private Map<Integer, String> keyValueStore;
@@ -20,11 +25,17 @@ public class ClusterOrganization {
 		keyValueStore =  new HashMap<>();
 	}
 	
-	public void getKeysValuePairingsFromFiles(File directory, char delimiter) {
-		for (File input : directory.listFiles()) {
-			if (!(input.getName().startsWith("_") || input.getName().startsWith(".")))
+        //Configuration conf = getConf();
+        Configuration conf = new Configuration();
+        FileSystem fs = FileSystem.get(conf);
+
+	public void getKeysValuePairingsFromFiles(String directory, char delimiter) throws IOException {
+	            FileStatus[] fstatus = fs.listStatus(new Path(directory));
+
+	            for (FileStatus input : fstatus) {
+			if (!(input.getPath().getName().startsWith("_") || input.getPath().getName().startsWith(".")))
 			{
-				try (BufferedReader reader = new BufferedReader(new FileReader(input))) {
+			        try (BufferedReader reader = new BufferedReader(new InputStreamReader(fs.open(input.getPath())))) {
 				    String line = null;
 				    String[] pairings;
 				    
@@ -42,16 +53,18 @@ public class ClusterOrganization {
 	}  
 	
 	//Convention: add "_new_input" to the original filename
-	public void createInputFileFromResultsFiles(File directory, char delimiter) {
+	public void createInputFileFromResultsFiles(String directory, char delimiter) throws IOException{
 		String directoryName = makeNewDirectoryFromResults(directory);
-		
-		for (File input : directory.listFiles()) {
-			if (!(input.getName().startsWith("_") || input.getName().startsWith("."))) {
-				try (BufferedReader reader = new BufferedReader(new FileReader(input))) {
+		FileStatus[] fstatus = fs.listStatus(new Path(directory));
+
+		for (FileStatus input : fstatus) {
+		    if (!(input.getPath().getName().startsWith("_") || input.getPath().getName().startsWith("."))) 
+			{
+			        try (BufferedReader reader = new BufferedReader(new InputStreamReader(fs.open(input.getPath())))) {
 				    String line = null;
 				    String value;
 				    int key;
-				    BufferedWriter newInput = createNewInputFileForWriting(directoryName + "/" + input.getName());
+				    BufferedWriter newInput = createNewInputFileForWriting(directoryName + "/" + input.getPath().getName());
 				    
 				    while ((line = reader.readLine()) != null) {
 				    	key = Integer.parseInt(line.trim());
@@ -75,12 +88,11 @@ public class ClusterOrganization {
 	}
 	
 	private BufferedWriter createNewInputFileForWriting(String name) {
-		File newInput = new File(name + "_input");
-		FileWriter fw = null;
+		Path newInput = new Path(name + "_input");
+		OutputStreamWriter fw = null;
 		
 		try {
-			newInput.createNewFile();
-			fw = new FileWriter(newInput.getAbsoluteFile());
+		    fw = new OutputStreamWriter(fs.create(newInput));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -90,15 +102,17 @@ public class ClusterOrganization {
 		return bw;
 	}
 
-	private String makeNewDirectoryFromResults(File directory) {
-		File newDir = new File(directory.getName() + "_input");
+	private String makeNewDirectoryFromResults(String directory)throws IOException {
+	        //Path path = new Path(directory);
+		Path newDir = new Path(directory + "_input");
 		
-		if (!newDir.exists()) {
-			newDir.mkdir();
-		} else {
-			System.err.println("Something wicked this way comes (you forgot to delete the previous directory)!");
+		if (fs.exists(newDir)) {
+		        fs.delete(newDir);
+			fs.mkdirs(newDir);
 		}
-		
+		else {
+		        fs.mkdirs(newDir);
+		}
 		//not safe
 		return newDir.getName();
 	}
@@ -106,7 +120,6 @@ public class ClusterOrganization {
 	//DELETE LATER IF NOT NECESSARY!
 	private int getClusterNumber(String name) {
 		Matcher m = Pattern.compile(".*?(\\d+)$").matcher(name);
-		
 		if (m.find()) {
 			return Integer.parseInt(m.group(1));
 		}
