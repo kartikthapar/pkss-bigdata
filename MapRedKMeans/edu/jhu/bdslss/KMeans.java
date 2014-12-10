@@ -1,3 +1,5 @@
+package edu.jhu.bdslss;
+
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.Map;
@@ -99,11 +101,11 @@ public class KMeans {
       job.setReducerClass (PKSSReducer.class);
 
       // set the input and output format class... these tell Haoop how to read/write to HDFS
-      job.setInputFormatClass(PKSS.InputFormat.class);
+      job.setInputFormatClass(edu.jhu.bdslss.pkss.InputFormat.class);
       job.setOutputFormatClass(TextOutputFormat.class);
 
       // set the input and output files
-      PKSS.InputFormat.setInputPaths (job, args[0]);
+      edu.jhu.bdslss.pkss.InputFormat.setInputPaths (job, args[0]);
       TextOutputFormat.setOutputPath (job, new Path (args[1] + (i + 1)));
 
       // force the split size to 8 megs (this is small!)

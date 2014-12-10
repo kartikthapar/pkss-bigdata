@@ -1,3 +1,4 @@
+package edu.jhu.bdslss;
 
 /**
  * An interface to an indexed element with an integer index into its

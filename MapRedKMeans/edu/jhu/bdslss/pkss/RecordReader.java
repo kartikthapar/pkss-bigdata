@@ -1,10 +1,11 @@
-package PKSS;
+package edu.jhu.bdslss.pkss;
 
 import java.io.IOException;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapred.SplitLocationInfo;
 import org.apache.hadoop.mapreduce.lib.input.FileSplit;
+import edu.jhu.bdslss.VectorizedObject;
 
 import java.util.Random;
 import org.apache.hadoop.conf.Configuration;

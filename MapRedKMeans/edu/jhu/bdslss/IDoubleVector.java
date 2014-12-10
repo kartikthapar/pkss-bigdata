@@ -1,3 +1,4 @@
+package edu.jhu.bdslss;
 
 /**
  * This is the interface for a vector of double-precision floating point values.

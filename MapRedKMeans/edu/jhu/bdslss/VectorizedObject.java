@@ -1,3 +1,4 @@
+package edu.jhu.bdslss;
 
 /**
  * This object stores a key-value pair, plus a "location" which is an IDoubleVector 
@@ -5,7 +6,7 @@
  * label of the document (the value), and a vector that describes the fraction of each of the
  * words in a dictionary that are found in the document.
  */
-class VectorizedObject {
+public class VectorizedObject {
  
   // this is the key of the object
   String key;

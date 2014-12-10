@@ -1,4 +1,6 @@
-import java.util.*;
+package edu.jhu.bdslss;
+
+import java.util.Iterator;
 
 interface ISparseArray<T> extends Iterable<IIndexedData<T>> {
     /**
