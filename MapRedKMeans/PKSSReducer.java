@@ -5,6 +5,11 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
+import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
+import java.util.List;
+import java.util.ArrayList;
+import java.io.UnsupportedEncodingException;
+import java.io.IOException;
 
 public class PKSSReducer extends Reducer<LongWritable, Text, LongWritable, Text>
 {
@@ -29,6 +34,7 @@ public class PKSSReducer extends Reducer<LongWritable, Text, LongWritable, Text>
     {
         // These are the intermediate results of computing the new cluster center
         long counter = 0;
+
         VectorizedObject thisCluster = null;
 
         boolean writeAssignments = context.getConfiguration().getBoolean(ASSIGNMENT_OUTPUT_KEY, true);
@@ -42,6 +48,10 @@ public class PKSSReducer extends Reducer<LongWritable, Text, LongWritable, Text>
             Path cluster_output = new Path(assignment_dir, "Cluster"+key.toString());
             assign_strm = fs.create(cluster_output);
         }
+
+        //TODO should probably set a capacity here!
+        List<String> data = new ArrayList<>();
+
 
         for (Text curText : Value)
         {
@@ -59,18 +69,15 @@ public class PKSSReducer extends Reducer<LongWritable, Text, LongWritable, Text>
 
             if (writeAssignments)
             {
-                //assign_strm.writeChars(curDataPoint.getKey().toString());
-                //assign_strm.writeChar('\n');
-                /* 
-                Adding the Cluster Assinment in Value field of the VectorizedObject
-                Writing the modified curDataPoint as a VectorizedObject itself
-                */
-                curDataPoint.setValue(key().toString());
-                assign_strm.writeChars(curDataPoint.writeOut());
+                curDataPoint.setValue(key.toString());
+                data.add(curDataPoint.writeOut());
             }
         }
+
+
         if (writeAssignments)
         {
+        	writeCompressedBytes(assign_strm, data, context);
             assign_strm.close();
         }
 
@@ -79,5 +86,44 @@ public class PKSSReducer extends Reducer<LongWritable, Text, LongWritable, Text>
         Text outputBuffer = new Text();
         outputBuffer.set(thisCluster.writeOut());
         context.write(key, outputBuffer);
+    }
+
+    //Delimiter is newline (\n)
+    private void writeCompressedBytes(FSDataOutputStream stream, List<String> data, Context context) {
+    	 //maximum number of bytes per split (we're making this the max num)
+        long blockSize = TextInputFormat.getMaxSplitSize(context);
+
+    	while (!data.isEmpty()) {
+    		long bytesBeforeCompression = 0;
+    		int numberOfElements = 0;
+
+    		//TODO should probably set a capacity here, too
+    		StringBuilder sb = new StringBuilder();
+
+    		while (bytesBeforeCompression < blockSize) {
+    			String current = data.get(0);
+
+    			if (bytesBeforeCompression + current.length() <= blockSize) {
+    				sb.append(data.remove(0) + "\n");
+    				//+1 for newline character
+    				bytesBeforeCompression += current.length() + 1;
+    				numberOfElements++;
+    			}
+    		}
+
+    		String block = Long.toString(bytesBeforeCompression) + "\n" + Integer.toString(numberOfElements) + "\n" + sb.toString();  
+
+    		try {
+    			byte[] temp = block.getBytes("UTF-8");
+
+    			//TODO ACTUALLY COMPRESS
+    			stream.write(temp, 0, temp.length);
+    		} catch(UnsupportedEncodingException e) {
+    			e.printStackTrace();
+    		} catch(IOException e) {
+    			e.printStackTrace();
+    		}
+    		
+    	}
     }
 }
