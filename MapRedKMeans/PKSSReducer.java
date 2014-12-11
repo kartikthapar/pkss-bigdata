@@ -5,6 +5,8 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
+import java.util.List;
+import java.util.ArrayList;
 
 public class PKSSReducer extends Reducer<LongWritable, Text, LongWritable, Text>
 {
