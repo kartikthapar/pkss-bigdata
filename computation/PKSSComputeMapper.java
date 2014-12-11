@@ -32,8 +32,7 @@ public class PKSSComputeMapper extends Mapper<LongWritable, Text, LongWritable, 
         SparseDoubleVector data_point = obj.getLocation();
 
         // get value
-        String clusterID = obj.getValue();
-
+        Long clusterID = Long.valueOf(obj.getValue()).longValue();
         context.write(new LongWritable(clusterID), value);
     }
 }

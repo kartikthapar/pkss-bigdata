@@ -38,10 +38,10 @@ public class PKSSComputeReducer extends Reducer<LongWritable, Text, LongWritable
         // apply some function to the location here
         
         // 1. Just add duh!
-        double sum;
+        double sum = 0.0;
         for (Integer locationIndex : computeLocations)
         {
-            double locationValue = location.get(locationIndex);
+            double locationValue = location.getItem(locationIndex);
             sum = sum + locationValue;
         }
     }
@@ -57,7 +57,7 @@ public class PKSSComputeReducer extends Reducer<LongWritable, Text, LongWritable
     {
         VectorizedObject thisCluster = null;
 
-        for (Text currentText: value)
+        for (Text currentText: Value)
         {
             VectorizedObject currentDataPoint = new VectorizedObject(currentText.toString());
             computeRoutine(currentDataPoint.getLocation());
