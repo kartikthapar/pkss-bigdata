@@ -53,7 +53,7 @@ public class PKSSComputeReducer extends Reducer<LongWritable, Text, LongWritable
     }
 
     @Override
-    public void reduce (Context context) throws java.io.IOException, InterruptedException
+    public void reduce(LongWritable key, Iterable<Text> Value, Context context) throws java.io.IOException, InterruptedException
     {
         VectorizedObject thisCluster = null;
 
