@@ -66,7 +66,7 @@ public class CompressedRecordReader extends org.apache.hadoop.mapreduce.RecordRe
         
         Configuration conf = context.getConfiguration();
         final Path file = split.getFile();
-        FileSystem fs = file.getFileSystem(conf):
+        FileSystem fs = file.getFileSystem(conf);
         FSDataInputStream strm = fs.open(file);
         strm.seek(split.getStart());
         strm.read(buf);
