@@ -65,7 +65,7 @@ public class PKSSReducer extends Reducer<LongWritable, Text, LongWritable, Text>
                 Adding the Cluster Assinment in Value field of the VectorizedObject
                 Writing the modified curDataPoint as a VectorizedObject itself
                 */
-                curDataPoint.setValue(key.toString());
+                curDataPoint.setValue(curDataPoint.getkey().toString());
                 assign_strm.writeChars(curDataPoint.writeOut());
             }
         }
