@@ -7,17 +7,15 @@ import org.apache.hadoop.mapred.SplitLocationInfo;
 import org.apache.hadoop.mapreduce.lib.input.FileSplit;
 import edu.jhu.bdslss.VectorizedObject;
 
-import java.util.Random;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.FSDataOutputStream;
-import org.apache.hadoop.fs.Path;
-
 public class RecordReader extends org.apache.hadoop.mapreduce.RecordReader<LongWritable, VectorizedObject>
 {
+    private long startOffset;
     private long totalByteCount;
     private long readByteCount;
     private FSDataInputStream fileInput;
+    private FileSystem fs;
+    private ByteBuffer buf;
+    private VectorizedObject current_value;
 
     @Override
     public void close()
@@ -29,14 +27,17 @@ public class RecordReader extends org.apache.hadoop.mapreduce.RecordReader<LongW
     public LongWritable getCurrentKey()
         throws IOException, InterruptedException
     {
-        return null;
+        if (current_value == null)
+            return null;
+        else
+            return current_value.getKey();
     }
 
     @Override
     public VectorizedObject getCurrentValue()
         throws IOException, InterruptedException
     {
-        return null;
+        return current_value;
     }
 
     @Override
@@ -52,47 +53,44 @@ public class RecordReader extends org.apache.hadoop.mapreduce.RecordReader<LongW
             org.apache.hadoop.mapreduce.TaskAttemptContext context)
         throws IOException, InterruptedException
     {
-        /*Random random = new Random();
-        Configuration conf = context.getConfiguration();
-        FileSystem fs = FileSystem.get(conf);
-        Path logDir = new Path("/pauls_log");
-        if (!fs.exists(logDir))
-            fs.mkdirs(logDir);
-        FSDataOutputStream strm;
-        int random_int = -1;
-        while (random_int < 0)
-            random_int = random.nextInt();
-        Path logPath = new Path(logDir, Integer.toString(random_int));
-        if (fs.exists(logPath))
-            strm = fs.append(logPath);
-        else
-            strm = fs.create(logPath);
-        strm.writeChars("*****\n");
-        strm.writeChars("Split is of type " + split.getClass().toString() + "\n");
-        strm.writeChars(split.toString() + "\n");
-        strm.writeChars("Split has length " + Long.toString(split.getLength()) + "\n");
-
-        String[] locationNames = split.getLocations();
-        strm.writeChars("There are " + Integer.toString(locationNames.length)+ " parts of the split\n");
-        for (String n: locationNames)
-        {
-            strm.writeChars("Part of split is at: " + n + "\n");
-        }
-        strm.close();*/
-
         FileSplit fsplit = (FileSplit)split;
+        startOffset = fsplit.getStart();
         totalByteCount = fsplit.getLength();
         readByteCount = 0;
         
-        FileSystem fs = FileSystem.get(context.getConfiguration());
-        FSDataInputStream fileInput = fs.open(fsplit.getPath());
-        
+        fs = FileSystem.get(context.getConfiguration());
+        fileInput = fs.open(fsplit.getPath());
+        buf = ByteBuffer.allocate(totalByteCount);
+        fileInput.read(startOffset, buf, 0, totalByteCount);
     }
 
     @Override
     public boolean nextKeyValue()
         throws IOException, InterruptedException
     {
-        return false;
+        if (readByteCount >= totalByteCount)
+            return false;
+        // Do something intelligent or buffering or something
+        // read a line from the file
+        boolean found_newline = false;
+        String line = "";
+        do {
+            long starting_point = readByteCount;
+            long end_index;
+            for (end_index = starting_point; buf.get(end_index) != '\n' && end_index < totalByteCount; ++end_index)
+            { }
+            line += buf.slice(starting_point, end_index).asCharBuffer().toString();
+            
+            if (buf.get(end_index) != '\n') 
+        } while (!found_newline);
+        
+        // if we hit the end of the buffer and there was no newline, then we
+        // need to keep reading in order to find the end of the record
+        // FIXME we should probably not read an entire new buffer...
+        fileInput.read(startOffset + totalByteCount, buf, 0, totalByteCount);
+
+        current_value = new VectorizedObject(line);
+
+        return true;
     }
 }
