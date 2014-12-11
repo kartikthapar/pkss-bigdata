@@ -12,7 +12,7 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 
-public class PKSSMapper extends Mapper<LongWritable, Text, LongWritable, Text>
+public class PKSSMapper extends Mapper<Long, VectorizedObject, LongWritable, Text>
 {
     private Map<Long, VectorizedObject> oldClusters;
 
@@ -38,10 +38,9 @@ public class PKSSMapper extends Mapper<LongWritable, Text, LongWritable, Text>
     // For now, the key is the number of bytes from the beginning of the file
     // value is the contents of that line of text
     @Override
-    public void map(LongWritable key, Text value, Context context)
+    public void map(Long key, VectorizedObject obj, Context context)
         throws IOException, InterruptedException
     {
-        VectorizedObject obj = new VectorizedObject(value.toString());
         SparseDoubleVector data_point = obj.getLocation();
 
         double minDist = -1;
@@ -57,6 +56,6 @@ public class PKSSMapper extends Mapper<LongWritable, Text, LongWritable, Text>
             }
         }
 
-        context.write(new LongWritable(closestIndex), value);
+        context.write(new LongWritable(closestIndex), new Text(obj.writeOut()));
     }
 }
