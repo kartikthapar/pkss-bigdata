@@ -82,7 +82,12 @@ public class KMeans {
       }
 
       // Need to decide when to write assignemnts to do reshuffling
-      conf.setBoolean(PKSSReducer.ASSIGNMENT_OUTPUT_KEY, true);
+      if (args[3] % 3 == 0) {
+        conf.setBoolean(PKSSReducer.ASSIGNMENT_OUTPUT_KEY, true);
+      }
+      else {
+        conf.setBoolean(PKSSReducer.ASSIGNMENT_OUTPUT_KEY, false);
+      }
 
       // get the new job
       Job job = Job.getInstance(conf);
