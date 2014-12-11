@@ -211,19 +211,21 @@ public class CBZip2InputStream extends InputStream implements BZip2Constants {
     }
 
     private void initialize() {
-        char magic3, magic4;
-        magic3 = bsGetUChar();
-        magic4 = bsGetUChar();
-        if (magic3 != 'h' || magic4 < '1' || magic4 > '9') {
+        char magic1, magic2; 
+        char magic3, magic4; 
+        magic1 = bsGetUChar(); 
+        magic2 = bsGetUChar(); 
+        magic3 = bsGetUChar(); 
+        magic4 = bsGetUChar(); 
+        if (magic1 != 'B' || magic2 != 'Z' | magic3 != 'h' || magic4 < '1' || magic4 > '9') {   
             bsFinishedWithStream();
             streamEnd = true;
             return;
         }
-
         setDecompressStructureSizes(magic4 - '0');
         computedCombinedCRC = 0;
     }
-
+   
     private void initBlock() {
         char magic1, magic2, magic3, magic4;
         char magic5, magic6;
@@ -870,4 +872,5 @@ public class CBZip2InputStream extends InputStream implements BZip2Constants {
         tt = new int[n];
     }
 }
+
 
