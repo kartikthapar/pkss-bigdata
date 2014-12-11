@@ -17,7 +17,7 @@ import org.apache.hadoop.fs.FileStatus;
 public class KMeans {
 
   static void printUsage() {
-    System.out.println ("KMeans <input> <clusterFileDirectory> <assignmentFileDirectory> <numIters> <numItersWriteIntResults>");
+    System.out.println ("KMeans <input> <clusterFileDirectory> <assignmentFileDirectory> <numIters> <numItersWriteIntResults> <compressionScheme {arith, lz4, bzip2}>");
     System.exit(-1);
   }
 
@@ -51,7 +51,7 @@ public class KMeans {
   public static int main (String [] args) throws Exception {
 
     // if we have the wrong number of args, then exit
-    if (args.length != 5) {
+    if (args.length != 6) {
       printUsage ();
       return 1;
     }
@@ -61,6 +61,7 @@ public class KMeans {
 
       // Get the default configuration object
       Configuration conf = new Configuration ();
+
 
       // look at all of the files in the cluster file directory... start by getting the directory name
       String dirName;
@@ -75,6 +76,11 @@ public class KMeans {
       // now, list the files in that directory
       FileSystem fs = FileSystem.get (conf);
       conf.set("clusterInput", dirName);
+      
+    //TODO remove if unnecessary/incorrect
+      conf.set("compression", args[5]);
+
+
       conf.set(PKSSReducer.ASSIGNMENT_OUTPUT_DIR_KEY, args[2] + (i + 1));
       Map<Long, VectorizedObject> clusters = ReadClusterCenters(fs, dirName);
       int cluster_count = clusters.size();

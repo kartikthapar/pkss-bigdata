@@ -13,6 +13,8 @@ import java.util.ArrayList;
 import java.io.UnsupportedEncodingException;
 import java.io.IOException;
 import nayuki.arithcode.AdaptiveArithmeticImpl;
+import edu.jhu.pkss.compression.OurLz4Impl;
+import org.apache.tools.bzip2.*;
 
 public class PKSSReducer extends Reducer<LongWritable, Text, LongWritable, Text>
 {
@@ -20,14 +22,23 @@ public class PKSSReducer extends Reducer<LongWritable, Text, LongWritable, Text>
     // Each file contains the list of IDs of the data points
     // assigned to that cluster
     private org.apache.hadoop.fs.Path assignment_dir;
-
+    private Configuration conf;
+    private long currentBlockAmount;
+    private int currentNumElements;
+    private long blockSize;   
+    private StringBuilder currentData;
+ 
     public static final String ASSIGNMENT_OUTPUT_DIR_KEY = "assignmentOutput";
     public static final String ASSIGNMENT_OUTPUT_KEY = "writeAssignments";
 
     @Override
     protected void setup(Context context)
     {
-        Configuration conf = context.getConfiguration();
+        conf = context.getConfiguration();
+        blockSize = TextInputFormat.getMaxSplitSize(context);
+
+        //TODO set an initial capacity
+        currentData = new StringBuilder();
         assignment_dir = new org.apache.hadoop.fs.Path(conf.get(ASSIGNMENT_OUTPUT_DIR_KEY));
     }
 
@@ -36,9 +47,6 @@ public class PKSSReducer extends Reducer<LongWritable, Text, LongWritable, Text>
         throws java.io.IOException, InterruptedException
     {
         // These are the intermediate results of computing the new cluster center
-        long counter = 0;
-
-        VectorizedObject thisCluster = null;
 
         boolean writeAssignments = context.getConfiguration().getBoolean(ASSIGNMENT_OUTPUT_KEY, true);
 
@@ -52,83 +60,103 @@ public class PKSSReducer extends Reducer<LongWritable, Text, LongWritable, Text>
             assign_strm = fs.create(cluster_output);
         }
 
-        //TODO should probably set a capacity here!
-        List<String> data = new ArrayList<>();
+        processInputData(assign_strm, key, Value, context, writeAssignments); 
+    }
 
 
+    private void processInputData(FSDataOutputStream assign_strm, LongWritable key, Iterable<Text> Value, Context context, boolean writeAssignments) throws IOException, InterruptedException{
+        long counter = 0;
+        VectorizedObject thisCluster = null;       
+ 
         for (Text curText : Value)
-        {
-            VectorizedObject curDataPoint = new VectorizedObject(curText.toString());
-            if (thisCluster == null) // FIXME Paul doesn't really like doing this check on every iteration
             {
-                thisCluster = curDataPoint;
-            }
-            else
-            {
-                curDataPoint.getLocation().addMyselfToHim(thisCluster.getLocation());
-            }
+                VectorizedObject curDataPoint = new VectorizedObject(curText.toString());
+                if (thisCluster == null) // FIXME Paul doesn't really like doing this check on every iteration
+                {
+                    thisCluster = curDataPoint;
+                }
+                else
+                {
+                    curDataPoint.getLocation().addMyselfToHim(thisCluster.getLocation());
+                }
 
-            counter += 1;
+                counter += 1;
 
-            if (writeAssignments)
-            {
-                curDataPoint.setValue(key.toString());
-                data.add(curDataPoint.writeOut());
+                if (writeAssignments)
+                {
+                    curDataPoint.setValue(key.toString());
+
+                    if (needToCreateNewBlock(curDataPoint.writeOut())) {
+                        writeCompressedBytes(assign_strm);
+                        resetVariables();
+                    }  
+                        updateData(curDataPoint.writeOut()); 
+                }
             }
-        }
 
 
         if (writeAssignments)
         {
-        	writeCompressedBytes(assign_strm, data, context);
+            if (currentData.length() > 0) {
+                writeCompressedBytes(assign_strm);
+            }
+            
             assign_strm.close();
         }
 
         thisCluster.getLocation().multiplyMyselfByHim(1.0 / counter);
-
         Text outputBuffer = new Text();
         outputBuffer.set(thisCluster.writeOut());
         context.write(key, outputBuffer);
     }
 
+   private void updateData(String datapoint) {
+        currentData.append(datapoint + "\n");
+        currentBlockAmount += datapoint.length() + 1;
+        currentNumElements++;        
+   }
+
+
+   private void resetVariables() {
+        currentBlockAmount = 0;
+        currentNumElements = 0;
+        currentData = new StringBuilder();
+    }
+
+    private boolean needToCreateNewBlock(String data) {
+        return currentBlockAmount + data.length() + 1 > blockSize;
+    }
+
     //Delimiter is newline (\n)
-    private void writeCompressedBytes(FSDataOutputStream stream, List<String> data, Context context) {
-    	 //maximum number of bytes per split (we're making this the max num)
-        long blockSize = TextInputFormat.getMaxSplitSize(context);
-        AdaptiveArithmeticImpl arith = new AdaptiveArithmeticImpl();
+    private void writeCompressedBytes(FSDataOutputStream stream) { 
+    		byte[] compressed;
 
-    	while (!data.isEmpty()) {
-    		long bytesBeforeCompression = 0;
-    		int numberOfElements = 0;
+            try {
+                //TODO check if writeBytes is the correct method to call
+                stream.writeBytes(Long.toString(currentBlockAmount) + "\n" + Integer.toString(currentNumElements) + "\n"); 
 
-    		//TODO should probably set a capacity here, too
-    		StringBuilder sb = new StringBuilder();
+                //may need to be slightly refactored
+                switch(conf.get("compression")) {
+                    case "arith":
+                        AdaptiveArithmeticImpl arith = new AdaptiveArithmeticImpl();
+                        compressed = arith.compress(currentData.toString().getBytes("UTF-8"));
+                        stream.write(compressed, 0, compressed.length);
+                        break;
+                    case "lz4":
+                        OurLz4Impl lz = new OurLz4Impl();
+                        compressed = lz.compress(currentData.toString().getBytes("UTF-8"));
+                        stream.write(compressed, 0, compressed.length); 
+                        break;
 
-    		while (!data.isEmpty() && bytesBeforeCompression < blockSize) {
-    			String current = data.get(0);
-
-    			if (bytesBeforeCompression + current.length() <= blockSize) {
-    				sb.append(data.remove(0) + "\n");
-    				//+1 for newline character
-    				bytesBeforeCompression += current.length() + 1;
-    				numberOfElements++;
-    			} else {
-                    break;
+                    case "bzip2":
+                        //TODO complete me
+                        break;        
                 }
-    		}
-
-    		String block = Long.toString(bytesBeforeCompression) + "\n" + Integer.toString(numberOfElements) + "\n" + sb.toString();  
-                
-
-    		try {
-    			byte[] compressed = arith.compress(block.getBytes("UTF-8"));
-                stream.write(compressed, 0, compressed.length);
-    		} catch(UnsupportedEncodingException e) {
+            } catch(UnsupportedEncodingException e) {
     			e.printStackTrace();
     		} catch(IOException e) {
     			e.printStackTrace();
     		}
     		
     	}
-    }
 }
