@@ -6,4 +6,4 @@ javac \
     edu/jhu/bdslss/pkss/*.java \
     edu/jhu/bdslss/*.java
 
-jar cf PKSS.jar edu/jhu/bdslss/pkss/*.class
+jar cf PKSS.jar edu/jhu/bdslss/pkss/*.class edu/jhu/bdslss/*.class
