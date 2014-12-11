@@ -1,4 +1,4 @@
-package edu.jhu.pkss.clustering;
+package edu.jhu.pkss.workload;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -51,7 +51,7 @@ public class KMeans
     public static int main (String [] args) throws Exception 
     {
         // if we have the wrong number of args, then exit
-        if (args.length != 1) 
+        if (args.length != 2) 
         {
             printUsage ();
             return 1;
@@ -78,7 +78,7 @@ public class KMeans
 
         // set the input and output files
         edu.jhu.pkss.clustering.InputFormat.setInputPaths (job, args[0]);
-        TextOutputFormat.setOutputPath (job, new Path (args[1] + (i + 1)));
+        TextOutputFormat.setOutputPath (job, new Path (args[1]));
 
         // force the split size to 8 megs (this is small!)
         TextInputFormat.setMinInputSplitSize (job, 1 * 1024 * 1024);
