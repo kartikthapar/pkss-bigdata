@@ -129,7 +129,7 @@ public class PKSSReducer extends Reducer<LongWritable, Text, LongWritable, Text>
 
     //Delimiter is newline (\n)
     private void writeCompressedBytes(FSDataOutputStream stream) { 
-    		byte[] compressed;
+    		byte[] compressed = new byte[blockSize];
 
             try {
                 stream.writeLong(currentBlockAmount);
@@ -141,7 +141,7 @@ public class PKSSReducer extends Reducer<LongWritable, Text, LongWritable, Text>
                         AdaptiveArithmeticImpl arith = new AdaptiveArithmeticImpl();
                         compressed = arith.compress(currentData.toString().getBytes("UTF-8"));
                         stream.write(compressed, 0, compressed.length);
-                        break;
+			break;
                     case "lz4":
                         OurLz4Impl lz = new OurLz4Impl();
                         compressed = lz.compress(currentData.toString().getBytes("UTF-8"));
@@ -157,6 +157,5 @@ public class PKSSReducer extends Reducer<LongWritable, Text, LongWritable, Text>
     		} catch(IOException e) {
     			e.printStackTrace();
     		}
-    		
-    	}
+	}
 }
