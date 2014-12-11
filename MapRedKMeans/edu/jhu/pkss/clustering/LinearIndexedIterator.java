@@ -1,4 +1,7 @@
-import java.util.*;
+package edu.jhu.pkss.clustering;
+
+import java.util.Iterator;
+import java.util.Vector;
 
 public class LinearIndexedIterator<T> implements Iterator<IIndexedData<T>> {
     private int curIdx;

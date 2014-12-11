@@ -1,3 +1,5 @@
+package edu.jhu.pkss.clustering;
+
 import java.util.*;
 
 class LinearSparseArray<T> implements ISparseArray<T> {
