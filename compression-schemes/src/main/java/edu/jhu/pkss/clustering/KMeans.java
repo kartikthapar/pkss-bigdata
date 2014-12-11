@@ -56,6 +56,7 @@ public class KMeans {
       return 1;
     }
 
+    boolean use_compressed_input = false;
     // repeate the whole thing the correct number of times
     for (int i = 0; i < Integer.parseInt (args[3]); i++) {
 
@@ -89,9 +90,13 @@ public class KMeans {
         throw new RuntimeException ("Could not find any clusters in the directory " + dirName);
       }
 
+      // Set whether the input is compressed *before* we decide that the output is compressed
+      // and that future inputs are comopressed
+      conf.setBoolean(edu.jhu.pkss.clustering.InputFormat.COMPRESSED_INPUT, true);
       // Need to decide when to write assignemnts to do reshuffling
       if (i % Integer.parseInt(args[4]) == 0) {
         conf.setBoolean(PKSSReducer.ASSIGNMENT_OUTPUT_KEY, true);
+        use_compressed_input = true;
       }
       else {
         conf.setBoolean(PKSSReducer.ASSIGNMENT_OUTPUT_KEY, false);

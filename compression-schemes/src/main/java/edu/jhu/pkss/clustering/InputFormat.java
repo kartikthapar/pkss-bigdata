@@ -12,13 +12,16 @@ import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 
 public class InputFormat extends org.apache.hadoop.mapreduce.lib.input.FileInputFormat<Long, VectorizedObject>
 {
+    public static final String COMPRESSED_INPUT = "compressedInput";
     @Override
     public org.apache.hadoop.mapreduce.RecordReader<Long, VectorizedObject> createRecordReader(
             InputSplit split,
             org.apache.hadoop.mapreduce.TaskAttemptContext context)
     {
-        // We'll just assume that the split is a fileSplit
-        return new edu.jhu.pkss.clustering.TextRecordReader();
+        if (context.getConfiguration().getBoolean(COMPRESSED_INPUT, false))
+            return new CompressedRecordReader();
+        else
+            return new edu.jhu.pkss.clustering.TextRecordReader();
     }
 
     private String[] getHostsForSplit(FileSystem fs, FileStatus file, long offset, long size)
