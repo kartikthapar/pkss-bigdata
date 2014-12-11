@@ -17,7 +17,7 @@ import nayuki.arithcode.AdaptiveArithmeticImpl;
 public class CompressedRecordReader extends org.apache.hadoop.mapreduce.RecordReader<Long, VectorizedObject>
 {
     private long decompressed_size;
-    private long bytes_read;
+    private int bytes_read;
     private int objects_returned;
     private int number_of_objects;
     private VectorizedObject curObj;
@@ -33,7 +33,7 @@ public class CompressedRecordReader extends org.apache.hadoop.mapreduce.RecordRe
     public Long getCurrentKey()
         throws IOException, InterruptedException
     {
-        if (!curObj)
+        if (curObj == null)
             return null;
         else
             return Long.parseLong(curObj.getKey());
@@ -43,7 +43,7 @@ public class CompressedRecordReader extends org.apache.hadoop.mapreduce.RecordRe
     public VectorizedObject getCurrentValue()
         throws IOException, InterruptedException
     {
-        return cur_obj;
+        return curObj;
     }
 
     @Override
@@ -59,11 +59,12 @@ public class CompressedRecordReader extends org.apache.hadoop.mapreduce.RecordRe
     {
         if (objects_returned == number_of_objects)
             return false;
-        long end_index;
+        int end_index;
         for (end_index = bytes_read; end_index < byte_data.length && byte_data[end_index] != '\n'; ++end_index)
         { }
         String string_data = new String(byte_data, bytes_read, end_index - bytes_read);
         curObj = new VectorizedObject(string_data);
+        bytes_read = end_index + 1;
         return true;
     }
 
