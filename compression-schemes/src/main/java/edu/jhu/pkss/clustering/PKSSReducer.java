@@ -129,7 +129,7 @@ public class PKSSReducer extends Reducer<LongWritable, Text, LongWritable, Text>
 
     //Delimiter is newline (\n)
     private void writeCompressedBytes(FSDataOutputStream stream) { 
-    		byte[] compressed = new byte[blockSize];
+    		byte[] compressed = new byte[(int)blockSize];
 
             try {
                 stream.writeLong(currentBlockAmount);

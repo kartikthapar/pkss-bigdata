@@ -9,6 +9,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.lib.input.FileSplit;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 
 public class InputFormat extends org.apache.hadoop.mapreduce.lib.input.FileInputFormat<Long, VectorizedObject>
 {
@@ -51,7 +52,7 @@ public class InputFormat extends org.apache.hadoop.mapreduce.lib.input.FileInput
     public List<InputSplit> getSplits(org.apache.hadoop.mapreduce.JobContext context)
         throws IOException
     {
-        long blockSize = 16*1024*1024; // derive this the same way as Steve & Simar do
+        long blockSize = TextInputFormat.getMaxSplitSize(context); // derive this the same way as Steve & Simar do
         List<InputSplit> splits = new java.util.ArrayList();
 
         List<FileStatus> files = listStatus(context);
@@ -68,6 +69,8 @@ public class InputFormat extends org.apache.hadoop.mapreduce.lib.input.FileInput
                 long splitSize = Math.min(bytesRemaining, blockSize);
                 String[] hosts = getHostsForSplit(fs, file, bytesAllocated, splitSize);
                 FileSplit cur_split = new FileSplit(path, bytesAllocated, splitSize, hosts);
+                bytesRemaining -= splitSize;
+                bytesAllocated += splitSize;
             }
         }
         return splits;
