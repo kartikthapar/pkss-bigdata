@@ -32,7 +32,7 @@ public class PKSSComputeReducer extends Reducer<LongWritable, Text, LongWritable
         }
     }
 
-    private void computeRoutine(SparseDoubleVector location)
+    private double computeRoutine(SparseDoubleVector location)
     {
         // apply some function to the location here
         
@@ -54,12 +54,15 @@ public class PKSSComputeReducer extends Reducer<LongWritable, Text, LongWritable
     @Override
     public void reduce(LongWritable key, Iterable<Text> Value, Context context) throws java.io.IOException, InterruptedException
     {
-        VectorizedObject thisCluster = null;
-
+        String result = "key: " + key + " value: ";
         for (Text currentText: Value)
         {
             VectorizedObject currentDataPoint = new VectorizedObject(currentText.toString());
-            computeRoutine(currentDataPoint.getLocation());
+            result = result + " " + computeRoutine(currentDataPoint.getLocation());
         }
+
+        Text outputBuffer = new Text();
+        outputBuffer.set(result);
+        context.write(key, outputBuffer);
     }
 }
