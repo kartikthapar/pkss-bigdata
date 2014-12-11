@@ -43,6 +43,7 @@ public class PKSSComputeReducer extends Reducer<LongWritable, Text, LongWritable
             double locationValue = location.getItem(locationIndex);
             sum = sum + locationValue;
         }
+        return sum;
     }
 
     @Override
