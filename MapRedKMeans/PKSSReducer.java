@@ -89,7 +89,7 @@ public class PKSSReducer extends Reducer<LongWritable, Text, LongWritable, Text>
     //Delimiter is newline (\n)
     private void writeCompressedBytes(FSDataOutputStream stream, List<String> data, Context context) {
     	 //maximum number of bytes per split (we're making this the max num)
-        long blockSize = TextInputFormat.getMaxInputSplitSize(context);
+        long blockSize = TextInputFormat.getMaxSplitSize(context);
 
     	while (!data.isEmpty()) {
     		long bytesBeforeCompression = 0;
