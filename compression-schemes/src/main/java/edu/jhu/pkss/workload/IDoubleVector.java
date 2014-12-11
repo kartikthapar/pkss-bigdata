@@ -1,3 +1,4 @@
+package edu.jhu.pkss.workload;
 
 /**
  * This is the interface for a vector of double-precision floating point values.

@@ -1,3 +1,5 @@
+package edu.jhu.pkss.workload;
+
 import java.io.IOException;
 
 public class RecordReader<Key, Value> extends org.apache.hadoop.mapreduce.RecordReader<Key, Value>

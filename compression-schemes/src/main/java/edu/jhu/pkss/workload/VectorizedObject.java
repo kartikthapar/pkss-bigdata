@@ -1,3 +1,4 @@
+package edu.jhu.pkss.workload;
 
 /**
  * This object stores a key-value pair, plus a "location" which is an IDoubleVector 

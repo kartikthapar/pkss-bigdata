@@ -1,3 +1,5 @@
+package edu.jhu.pkss.workload;
+
 import java.util.*;
 
 public class LinearIndexedIterator<T> implements Iterator<IIndexedData<T>> {

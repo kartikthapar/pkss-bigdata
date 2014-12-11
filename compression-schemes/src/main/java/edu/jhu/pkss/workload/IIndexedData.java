@@ -1,3 +1,4 @@
+package edu.jhu.pkss.workload;
 
 /**
  * An interface to an indexed element with an integer index into its

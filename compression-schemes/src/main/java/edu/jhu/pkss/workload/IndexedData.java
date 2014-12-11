@@ -1,3 +1,5 @@
+package edu.jhu.pkss.workload;
+
 public class IndexedData<T> implements IIndexedData<T> {
     private int index;
     private T   data;

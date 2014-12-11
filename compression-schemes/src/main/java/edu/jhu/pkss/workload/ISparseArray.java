@@ -1,3 +1,5 @@
+package edu.jhu.pkss.workload;
+
 import java.util.*;
 
 interface ISparseArray<T> extends Iterable<IIndexedData<T>> {
