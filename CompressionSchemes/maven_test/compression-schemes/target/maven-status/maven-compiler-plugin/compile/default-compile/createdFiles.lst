@@ -2,6 +2,8 @@ nayuki/arithcode/AdaptiveArithmeticCompress.class
 nayuki/arithcode/SimpleFrequencyTable.class
 edu/jhu/pkss/compression/CompressionScheme.class
 nayuki/arithcode/AdaptiveArithmeticImpl.class
+org/apache/tools/bzip2/CBZip2OutputStream$1.class
+org/apache/tools/bzip2/CBZip2OutputStream$StackElem.class
 nayuki/arithcode/CheckedFrequencyTable.class
 nayuki/arithcode/BitOutputStream.class
 nayuki/arithcode/FlatFrequencyTable.class
@@ -12,6 +14,11 @@ nayuki/arithcode/ArithmeticDecoder.class
 nayuki/arithcode/BitInputStream.class
 edu/jhu/pkss/compression/Main.class
 nayuki/arithcode/FrequencyTable.class
+org/apache/tools/bzip2/CBZip2InputStream.class
 edu/jhu/pkss/compression/OurLz4Impl.class
+org/apache/tools/bzip2/CBZip2OutputStream.class
+org/apache/tools/bzip2/CRC.class
+org/apache/tools/bzip2/BZip2Constants.class
 nayuki/arithcode/ArithmeticCompress.class
 nayuki/arithcode/ArithmeticEncoder.class
+org/apache/tools/bzip2/SampleDriverForBZip2.class
