@@ -1,4 +1,4 @@
-package edu.jhu.bdslss;
+package edu.jhu.pkss.clustering;
 
 /**
  * This object stores a key-value pair, plus a "location" which is an IDoubleVector 

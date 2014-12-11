@@ -1,4 +1,4 @@
-package edu.jhu.bdslss;
+package edu.jhu.pkss.clustering;
 
 public class IndexedData<T> implements IIndexedData<T> {
     private int index;

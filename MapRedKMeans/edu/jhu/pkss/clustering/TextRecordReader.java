@@ -1,11 +1,10 @@
-package edu.jhu.bdslss.pkss;
+package edu.jhu.pkss.clustering;
 
 import java.io.IOException;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
-import edu.jhu.bdslss.VectorizedObject;
 
 public class TextRecordReader extends org.apache.hadoop.mapreduce.RecordReader<Long, VectorizedObject>
 {

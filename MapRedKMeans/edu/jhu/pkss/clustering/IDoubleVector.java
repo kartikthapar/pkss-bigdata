@@ -1,4 +1,4 @@
-package edu.jhu.bdslss;
+package edu.jhu.pkss.clustering;
 
 /**
  * This is the interface for a vector of double-precision floating point values.
