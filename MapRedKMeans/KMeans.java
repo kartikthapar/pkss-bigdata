@@ -15,7 +15,7 @@ import org.apache.hadoop.fs.FileStatus;
 public class KMeans {
 
   static void printUsage() {
-    System.out.println ("KMeans <input> <clusterFileDirectory> <assignmentFileDirectory> <numIters>");
+    System.out.println ("KMeans <input> <clusterFileDirectory> <assignmentFileDirectory> <numIters> <numItersWriteIntResults>");
     System.exit(-1);
   }
 
@@ -49,7 +49,7 @@ public class KMeans {
   public static int main (String [] args) throws Exception {
 
     // if we have the wrong number of args, then exit
-    if (args.length != 4) {
+    if (args.length != 5) {
       printUsage ();
       return 1;
     }
@@ -82,7 +82,7 @@ public class KMeans {
       }
 
       // Need to decide when to write assignemnts to do reshuffling
-      if (i % 3 == 0) {
+      if (i % args[4] == 0) {
         conf.setBoolean(PKSSReducer.ASSIGNMENT_OUTPUT_KEY, true);
       }
       else {
