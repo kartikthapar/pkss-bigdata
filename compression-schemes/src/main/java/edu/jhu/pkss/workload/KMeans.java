@@ -60,7 +60,7 @@ public class KMeans
         Configuration conf = new Configuration();
         // get the new job
         Job job = Job.getInstance(conf);
-        job.setJobName ("K-Means clustering");
+        job.setJobName ("K-Means workload");
 
         // all of the inputs and outputs are text
         job.setMapOutputKeyClass (LongWritable.class);
