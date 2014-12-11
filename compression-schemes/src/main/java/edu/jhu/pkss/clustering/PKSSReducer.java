@@ -132,8 +132,8 @@ public class PKSSReducer extends Reducer<LongWritable, Text, LongWritable, Text>
     		byte[] compressed;
 
             try {
-                //TODO check if writeBytes is the correct method to call
-                stream.writeBytes(Long.toString(currentBlockAmount) + "\n" + Integer.toString(currentNumElements) + "\n"); 
+                stream.writeLong(currentBlockAmount);
+                stream.writeInt(currentNumElements); 
 
                 //may need to be slightly refactored
                 switch(conf.get("compression")) {
