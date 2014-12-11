@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.io.UnsupportedEncodingException;
 import java.io.IOException;
+import nayuki.arithcode.AdaptiveArithmeticImpl;
 
 public class PKSSReducer extends Reducer<LongWritable, Text, LongWritable, Text>
 {
@@ -94,6 +95,7 @@ public class PKSSReducer extends Reducer<LongWritable, Text, LongWritable, Text>
     private void writeCompressedBytes(FSDataOutputStream stream, List<String> data, Context context) {
     	 //maximum number of bytes per split (we're making this the max num)
         long blockSize = TextInputFormat.getMaxSplitSize(context);
+        AdaptiveArithmeticImpl arith = new AdaptiveArithmeticImpl();
 
     	while (!data.isEmpty()) {
     		long bytesBeforeCompression = 0;
@@ -102,7 +104,7 @@ public class PKSSReducer extends Reducer<LongWritable, Text, LongWritable, Text>
     		//TODO should probably set a capacity here, too
     		StringBuilder sb = new StringBuilder();
 
-    		while (bytesBeforeCompression < blockSize) {
+    		while (!data.isEmpty() && bytesBeforeCompression < blockSize) {
     			String current = data.get(0);
 
     			if (bytesBeforeCompression + current.length() <= blockSize) {
@@ -110,16 +112,17 @@ public class PKSSReducer extends Reducer<LongWritable, Text, LongWritable, Text>
     				//+1 for newline character
     				bytesBeforeCompression += current.length() + 1;
     				numberOfElements++;
-    			}
+    			} else {
+                    break;
+                }
     		}
 
     		String block = Long.toString(bytesBeforeCompression) + "\n" + Integer.toString(numberOfElements) + "\n" + sb.toString();  
+                
 
     		try {
-    			byte[] temp = block.getBytes("UTF-8");
-
-    			//TODO ACTUALLY COMPRESS
-    			stream.write(temp, 0, temp.length);
+    			byte[] compressed = arith.compress(block.getBytes("UTF-8"));
+                stream.write(compressed, 0, compressed.length);
     		} catch(UnsupportedEncodingException e) {
     			e.printStackTrace();
     		} catch(IOException e) {
