@@ -15,6 +15,9 @@ public class PKSSComputeReducer extends Reducer<LongWritable, Text, LongWritable
     int numberOfComputeLocations;
     int maxLocations;
 
+    public static final String ASSIGNMENT_OUTPUT_DIR_KEY = "assignmentOutput";
+    public static final String ASSIGNMENT_OUTPUT_KEY = "writeAssignments";
+
     public PKSSComputeReducer()
     {
         numberOfComputeLocations = 10;

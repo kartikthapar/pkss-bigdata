@@ -73,7 +73,7 @@ public class KMeans {
       // now, list the files in that directory
       FileSystem fs = FileSystem.get (conf);
       conf.set("clusterInput", dirName);
-      conf.set(PKSSReducer.ASSIGNMENT_OUTPUT_DIR_KEY, args[2] + (i + 1));
+      conf.set(PKSSComputeReducer.ASSIGNMENT_OUTPUT_DIR_KEY, args[2] + (i + 1));
       Map<Long, VectorizedObject> clusters = ReadClusterCenters(fs, dirName);
       int cluster_count = clusters.size();
       if (cluster_count <= 0)
