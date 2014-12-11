@@ -1,6 +1,6 @@
-package net.jpountz.lz4;
+package edu.jhu.pkss.compression;
 
-import edu.jhu.pkss.compression.CompressionScheme;
+import net.jpountz.lz4.*;
 
 public class OurLz4Impl implements CompressionScheme{
 	private int decompressedLength;
