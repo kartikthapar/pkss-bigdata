@@ -82,7 +82,7 @@ public class KMeans {
       }
 
       // Need to decide when to write assignemnts to do reshuffling
-      if (args[3] % 3 == 0) {
+      if (i % 3 == 0) {
         conf.setBoolean(PKSSReducer.ASSIGNMENT_OUTPUT_KEY, true);
       }
       else {
