@@ -33,7 +33,7 @@ public class PKSSComputeReducer extends Reducer<LongWritable, Text, LongWritable
         }
     }
 
-    private static void computeRoutine(SparseDoubleVector location)
+    private void computeRoutine(SparseDoubleVector location)
     {
         // apply some function to the location here
         
