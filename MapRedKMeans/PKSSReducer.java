@@ -8,6 +8,8 @@ import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import java.util.List;
 import java.util.ArrayList;
+import java.io.UnsupportedEncodingException;
+import java.io.IOException;
 
 public class PKSSReducer extends Reducer<LongWritable, Text, LongWritable, Text>
 {
@@ -110,10 +112,18 @@ public class PKSSReducer extends Reducer<LongWritable, Text, LongWritable, Text>
     		}
 
     		String block = Long.toString(bytesBeforeCompression) + "\n" + Integer.toString(numberOfElements) + "\n" + sb.toString();  
-    		byte[] temp = block.getBytes("UTF-8");
 
-    		//TODO ACTUALLY COMPRESS
-    		stream.write(temp, 0, temp.length);
+    		try {
+    			byte[] temp = block.getBytes("UTF-8");
+
+    			//TODO ACTUALLY COMPRESS
+    			stream.write(temp, 0, temp.length);
+    		} catch(UnsupportedEncodingException e) {
+    			e.printStackTrace();
+    		} catch(IOException e) {
+    			e.printStackTrace();
+    		}
+    		
     	}
     }
 }
