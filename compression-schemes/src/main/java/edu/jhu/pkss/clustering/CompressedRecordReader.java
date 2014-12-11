@@ -65,6 +65,7 @@ public class CompressedRecordReader extends org.apache.hadoop.mapreduce.RecordRe
         String string_data = new String(byte_data, bytes_read, end_index - bytes_read);
         curObj = new VectorizedObject(string_data);
         bytes_read = end_index + 1;
+        objects_returned += 1;
         return true;
     }
 
