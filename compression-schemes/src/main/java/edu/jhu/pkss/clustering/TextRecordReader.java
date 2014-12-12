@@ -5,11 +5,18 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
+import org.apache.hadoop.mapreduce.RecordReader;
 
-public class TextRecordReader extends org.apache.hadoop.mapreduce.RecordReader<Long, VectorizedObject>
+public class TextRecordReader extends RecordReader<Long, VectorizedObject>
 {
-    private org.apache.hadoop.mapreduce.lib.input.LineRecordReader innerReader;
+    private RecordReader<LongWritable, Text> innerReader;
     private VectorizedObject curObj;
+
+    public TextRecordReader(RecordReader<LongWritable, Text> r)
+    {
+        innerReader = r;
+        curObj = null;
+    }
 
     @Override
     public void close()
@@ -62,7 +69,6 @@ public class TextRecordReader extends org.apache.hadoop.mapreduce.RecordReader<L
     public void initialize(InputSplit split, TaskAttemptContext context)
         throws IOException, InterruptedException
     {
-        innerReader = new org.apache.hadoop.mapreduce.lib.input.LineRecordReader();
         innerReader.initialize(split, context);
     }
 }
