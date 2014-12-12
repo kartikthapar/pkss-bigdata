@@ -157,7 +157,8 @@ public class PKSSReducer extends Reducer<LongWritable, Text, LongWritable, Text>
                 stream.writeLong(currentBlockAmount);
                 stream.writeInt(currentNumElements);
                 stream.write(compressed, 0, compressed.length);
-                for (int i = compressed.length; i < blockSize; ++i)
+                // FIXME this number is the length of the header
+                for (int i = compressed.length + 16; i < blockSize; ++i)
                     stream.write(0);
             // Commented out so that the hadoop job comes crashing to a halt
             // when something goes wrong.  We can't find errors like this
