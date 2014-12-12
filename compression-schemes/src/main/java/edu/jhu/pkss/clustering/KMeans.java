@@ -96,14 +96,14 @@ public class KMeans {
       // Need to decide when to write assignemnts to do reshuffling
       if (i % Integer.parseInt(args[4]) == 0) {
         conf.setBoolean(PKSSReducer.ASSIGNMENT_OUTPUT_KEY, true);
-        use_compressed_input = true;
+        // use_compressed_input = true;
       }
       else {
         conf.setBoolean(PKSSReducer.ASSIGNMENT_OUTPUT_KEY, false);
       }
 
-      if (i == 0) {
-	  use_compressed_input = false;
+      if (i != 0) {
+	  use_compressed_input = true;
       }
       conf.setBoolean(edu.jhu.pkss.clustering.InputFormat.COMPRESSED_INPUT, use_compressed_input);
       // get the new job
