@@ -6,7 +6,8 @@ import java.io.*;
  * not all of the entries in the vector are explicitly represented).  All non-default
  * entires in the vector are stored in a HashMap.
  */
-class SparseDoubleVector implements IDoubleVector {
+
+public class SparseDoubleVector implements IDoubleVector {
   
   // this stores all of the non-default entries in the sparse vector
   private ISparseArray<Double> nonEmptyEntries;

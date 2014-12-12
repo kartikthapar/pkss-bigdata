@@ -58,7 +58,7 @@ public class KMeans {
     
     // Not using the compressed input for the first iteration
     boolean use_compressed_input = false;
-    
+    int iteration_to_read = 0;
     // repeate the whole thing the correct number of times
     for (int i = 0; i < Integer.parseInt (args[3]); i++) {
 
@@ -96,20 +96,22 @@ public class KMeans {
       conf.setBoolean(edu.jhu.pkss.clustering.InputFormat.COMPRESSED_INPUT, use_compressed_input);
       
       // Need to decide when to write assignemnts to do reshuffling
-      /*
       if (i % Integer.parseInt(args[4]) == 0) {
         conf.setBoolean(PKSSReducer.ASSIGNMENT_OUTPUT_KEY, true);
         use_compressed_input = true;
+	iteration_to_read = i+1;
       }
       else {
         conf.setBoolean(PKSSReducer.ASSIGNMENT_OUTPUT_KEY, false);
       }
-      */
       
+      /*
       conf.setBoolean(PKSSReducer.ASSIGNMENT_OUTPUT_KEY, true);
       if (i != 0) {
 	  use_compressed_input = true;
       }
+      */
+      
       // conf.setBoolean(edu.jhu.pkss.clustering.InputFormat.COMPRESSED_INPUT, false);
       
       // get the new job
@@ -135,7 +137,10 @@ public class KMeans {
       // We need to change the Input files path to be the 
       // new assignned directories depending on the iteration
       // instead of the original Infut files directory
-      edu.jhu.pkss.clustering.InputFormat.setInputPaths (job, args[0]);
+      if(i == 0)
+	  edu.jhu.pkss.clustering.InputFormat.setInputPaths (job, args[0]);
+      else
+	  edu.jhu.pkss.clustering.InputFormat.setInputPaths (job, args[2]+ iteration_to_read);
       TextOutputFormat.setOutputPath (job, new Path (args[1] + (i + 1)));
 
       // force the split size to 8 megs (this is small!)
