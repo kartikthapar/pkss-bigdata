@@ -93,7 +93,7 @@ public class PKSSReducer extends Reducer<LongWritable, Text, LongWritable, Text>
                         writeCompressedBytes(assign_strm);
                         resetVariables();
                     }  
-                        updateData(curDataPoint.writeOut()); 
+                    updateData(curDataPoint.writeOut()); 
                 }
             }
 
@@ -131,34 +131,40 @@ public class PKSSReducer extends Reducer<LongWritable, Text, LongWritable, Text>
     }
 
     //Delimiter is newline (\n)
-    private void writeCompressedBytes(FSDataOutputStream stream) { 
-    		byte[] compressed = new byte[(int)blockSize];
+    private void writeCompressedBytes(FSDataOutputStream stream)
+        throws IOException
+    {
+    		byte[] compressed = null;// = new byte[(int)blockSize];
 
-            try {
-                stream.writeLong(currentBlockAmount);
-                stream.writeInt(currentNumElements); 
+            // try {
 
                 //may need to be slightly refactored
                 switch(conf.get("compression")) {
                     case "arith":
                         AdaptiveArithmeticImpl arith = new AdaptiveArithmeticImpl();
                         compressed = arith.compress(currentData.toString().getBytes("UTF-8"));
-                        stream.write(compressed, 0, compressed.length);
 			break;
                     case "lz4":
                         OurLz4Impl lz = new OurLz4Impl();
                         compressed = lz.compress(currentData.toString().getBytes("UTF-8"));
-                        stream.write(compressed, 0, compressed.length); 
                         break;
 
                     case "bzip2":
                         //TODO complete me
                         break;        
                 }
-            } catch(UnsupportedEncodingException e) {
-    			e.printStackTrace();
-    		} catch(IOException e) {
-    			e.printStackTrace();
-    		}
+                stream.writeInt(compressed.length);
+                stream.writeLong(currentBlockAmount);
+                stream.writeInt(currentNumElements);
+                stream.write(compressed, 0, compressed.length);
+                for (int i = compressed.length; i < blockSize; ++i)
+                    stream.write(0);
+            // Commented out so that the hadoop job comes crashing to a halt
+            // when something goes wrong.  We can't find errors like this
+            //} catch(UnsupportedEncodingException e) {
+    		//	e.printStackTrace();
+    		//} catch(IOException e) {
+    		//	e.printStackTrace();
+    		//}
 	}
 }
