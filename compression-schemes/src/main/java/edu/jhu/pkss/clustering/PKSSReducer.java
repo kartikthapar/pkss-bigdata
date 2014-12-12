@@ -30,6 +30,7 @@ public class PKSSReducer extends Reducer<LongWritable, Text, LongWritable, Text>
  
     public static final String ASSIGNMENT_OUTPUT_DIR_KEY = "assignmentOutput";
     public static final String ASSIGNMENT_OUTPUT_KEY = "writeAssignments";
+    public static final short REPLICATION_FACTOR = 1;
 
     @Override
     protected void setup(Context context)
@@ -57,14 +58,16 @@ public class PKSSReducer extends Reducer<LongWritable, Text, LongWritable, Text>
             // TODO make the write optional depending on configuration
             FileSystem fs = FileSystem.get(context.getConfiguration());
             Path cluster_output = new Path(assignment_dir, "Cluster"+key.toString());
-            assign_strm = fs.create(cluster_output);
+            assign_strm = fs.create(cluster_output, REPLICATION_FACTOR);
         }
 
         processInputData(assign_strm, key, Value, context, writeAssignments); 
     }
 
 
-    private void processInputData(FSDataOutputStream assign_strm, LongWritable key, Iterable<Text> Value, Context context, boolean writeAssignments) throws IOException, InterruptedException{
+    private void processInputData(FSDataOutputStream assign_strm, LongWritable key, Iterable<Text> Value, Context context, boolean writeAssignments)
+        throws IOException, InterruptedException
+    {
         long counter = 0;
         VectorizedObject thisCluster = null;       
  
