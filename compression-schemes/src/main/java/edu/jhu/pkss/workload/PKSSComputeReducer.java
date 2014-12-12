@@ -17,20 +17,14 @@ import edu.jhu.pkss.clustering.SparseDoubleVector;
 public class PKSSComputeReducer extends Reducer<LongWritable, Text, LongWritable, Text>
 {
     ArrayList<Integer> computeLocations = new ArrayList<Integer>();
-    int numberOfComputeLocations;
-    int maxLocations;
 
     public PKSSComputeReducer()
     {
-        numberOfComputeLocations = 10;
-        maxLocations = 1024;
-
         Random random = new Random();
         int i = 0;
         while (i > 0)
         {
             // generate a random number in the range 0...1023 and add it to the list of computation indexes
-            computeLocations.add(random.nextInt(maxLocations));
             i--;
         }
     }
@@ -38,7 +32,19 @@ public class PKSSComputeReducer extends Reducer<LongWritable, Text, LongWritable
     private double computeRoutine(SparseDoubleVector location)
     {
         // apply some function to the location here
+        ArrayList<Integer> computeLocations = new ArrayList<Integer>();
+        computeLocations.add(1);
+        computeLocations.add(2);
         
+        double sum = 0.0;
+        for (Integer locationIndex: computeLocations)
+        {
+            sum = sum + location.getItem(locationIndex);
+        }
+        return sum;
+        //return location.getItem(1) + location.getItem(2);
+
+        /*       
         // 1. Just add duh!
         double sum = 0.0;
         for (Integer locationIndex : computeLocations)
@@ -47,6 +53,7 @@ public class PKSSComputeReducer extends Reducer<LongWritable, Text, LongWritable
             sum = sum + locationValue;
         }
         return sum;
+        */
     }
 
     @Override
