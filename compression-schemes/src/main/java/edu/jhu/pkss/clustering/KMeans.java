@@ -131,6 +131,10 @@ public class KMeans {
       job.setOutputFormatClass(TextOutputFormat.class);
 
       // set the input and output files
+      // TODO Simar thinks this is needs to be done, any thoughts?
+      // We need to change the Input files path to be the 
+      // new assignned directories depending on the iteration
+      // instead of the original Infut files directory
       edu.jhu.pkss.clustering.InputFormat.setInputPaths (job, args[0]);
       TextOutputFormat.setOutputPath (job, new Path (args[1] + (i + 1)));
 
