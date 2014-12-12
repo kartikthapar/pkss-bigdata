@@ -12,7 +12,7 @@ constexpr unsigned long long GIGABYTE = MEGABYTE * 1024;
 constexpr double RANGE = 1000000.0;
 constexpr double MAX_WIDTH = 10000.0;
 
-constexpr unsigned long long TARGET_BYTE_COUNT = 10 * MEGABYTE;
+constexpr unsigned long long TARGET_BYTE_COUNT = 10 * GIGABYTE;
 
 typedef std::array<double, DIMENSIONS> Point;
 std::array<Point, CLUSTER_COUNT> cluster_centers;
@@ -49,9 +49,10 @@ int main()
     while (bytes_written < TARGET_BYTE_COUNT)
     {
         std::ostringstream strm;
-        strm << "key: " << row_counter << ";";
-        strm << "value: random; len: " << DIMENSIONS << ";";
         unsigned cluster = cluster_chooser(generator);
+        strm << "key: " << row_counter << "; ";
+        strm << "value: " << cluster << "; ";
+        strm << "len: " << DIMENSIONS << "; ";
         for (unsigned dim = 0; dim < DIMENSIONS; ++dim)
         {
             double zscore = normal(generator);
