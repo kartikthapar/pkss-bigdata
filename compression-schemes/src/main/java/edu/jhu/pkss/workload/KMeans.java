@@ -14,6 +14,8 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FileStatus;
 
+import edu.jhu.pkss.clustering.VectorizedObject;
+
 public class KMeans
 {
     static void printUsage()
@@ -73,11 +75,11 @@ public class KMeans
         job.setReducerClass (PKSSComputeReducer.class);
 
         // set the input and output format class... these tell Haoop how to read/write to HDFS
-        job.setInputFormatClass(edu.jhu.pkss.workload.InputFormat.class);
+        job.setInputFormatClass(edu.jhu.pkss.clustering.InputFormat.class);
         job.setOutputFormatClass(TextOutputFormat.class);
 
         // set the input and output files
-        edu.jhu.pkss.workload.InputFormat.setInputPaths (job, args[0]);
+        edu.jhu.pkss.clustering.InputFormat.setInputPaths (job, args[0]);
         TextOutputFormat.setOutputPath (job, new Path (args[1]));
 
         // force the split size to 8 megs (this is small!)
