@@ -25,16 +25,18 @@ public class AdaptiveArithmeticImpl implements CompressionScheme{
 	}
 	
 	
-	public byte[] decompress(byte[] b) {
+	public byte[] decompress(byte[] b)
+        throws IOException
+    {
 		InputStream in = new ByteArrayInputStream(b);
 		ByteArrayOutputStream out = null;
  
-		try {
+		//try {
 			out = new ByteArrayOutputStream();
 			AdaptiveArithmeticDecompress.decompress(new BitInputStream(in), out);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		//} catch (IOException e) {
+		//	e.printStackTrace();
+		//}
 
 		return out.toByteArray();
 	}

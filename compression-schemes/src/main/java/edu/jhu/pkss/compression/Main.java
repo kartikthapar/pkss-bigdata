@@ -2,6 +2,7 @@ package edu.jhu.pkss.compression;
 import java.io.UnsupportedEncodingException;
 import nayuki.arithcode.AdaptiveArithmeticImpl;
 import java.nio.ByteBuffer;
+import java.io.IOException;
 
 /**
  * Hello world!
@@ -9,7 +10,7 @@ import java.nio.ByteBuffer;
 
 public class Main
 {
-    public static void main( String[] args )
+    public static void main( String[] args ) throws IOException
     {
     	OurLz4Impl lz = new OurLz4Impl();
 	AdaptiveArithmeticImpl a = new AdaptiveArithmeticImpl();
