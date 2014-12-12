@@ -6,7 +6,10 @@ import org.apache.hadoop.fs.BlockLocation;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.InputSplit;
+import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.lib.input.FileSplit;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
@@ -14,6 +17,13 @@ import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 public class InputFormat extends org.apache.hadoop.mapreduce.lib.input.FileInputFormat<Long, VectorizedObject>
 {
     public static final String COMPRESSED_INPUT = "compressedInput";
+    private TextInputFormat textFormat;
+
+    public InputFormat()
+    {
+        textFormat = new TextInputFormat();
+    }
+
     @Override
     public org.apache.hadoop.mapreduce.RecordReader<Long, VectorizedObject> createRecordReader(
             InputSplit split,
@@ -22,8 +32,10 @@ public class InputFormat extends org.apache.hadoop.mapreduce.lib.input.FileInput
         if (context.getConfiguration().getBoolean(COMPRESSED_INPUT, false))
             return new CompressedRecordReader();
         else
-            return new edu.jhu.pkss.clustering.TextRecordReader();
-	    //return new org.apache.hadoop.mapreduce.lib.input.LineRecordReader();
+        {
+            RecordReader<LongWritable, Text> innerReader = textFormat.createRecordReader(split, context);
+            return new edu.jhu.pkss.clustering.TextRecordReader(innerReader);
+        }
     }
 
     private String[] getHostsForSplit(FileSystem fs, FileStatus file, long offset, long size)
@@ -53,6 +65,9 @@ public class InputFormat extends org.apache.hadoop.mapreduce.lib.input.FileInput
     public List<InputSplit> getSplits(org.apache.hadoop.mapreduce.JobContext context)
         throws IOException
     {
+        // Just punt out to the text input format if we're not doing compressed input
+        if (!context.getConfiguration().getBoolean(COMPRESSED_INPUT, false))
+            return textFormat.getSplits(context);
         long blockSize = TextInputFormat.getMaxSplitSize(context); // derive this the same way as Steve & Simar do
         List<InputSplit> splits = new java.util.ArrayList();
 
@@ -66,10 +81,11 @@ public class InputFormat extends org.apache.hadoop.mapreduce.lib.input.FileInput
 
             while (bytesRemaining > 0)
             {
-                // FileSplit(path, start, length, hosts, in memory hosts);
                 long splitSize = Math.min(bytesRemaining, blockSize);
                 String[] hosts = getHostsForSplit(fs, file, bytesAllocated, splitSize);
+                // FileSplit(path, start, length, hosts, in memory hosts);
                 FileSplit cur_split = new FileSplit(path, bytesAllocated, splitSize, hosts);
+                splits.add(cur_split);
                 bytesRemaining -= splitSize;
                 bytesAllocated += splitSize;
             }
