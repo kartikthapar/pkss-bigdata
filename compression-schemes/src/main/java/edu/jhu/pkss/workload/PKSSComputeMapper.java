@@ -12,6 +12,8 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 
+import edu.jhu.pkss.clustering.VectorizedObject;
+
 public class PKSSComputeMapper extends Mapper<Long, VectorizedObject, LongWritable, Text>
 {
     private Map<Long, VectorizedObject> clusters;

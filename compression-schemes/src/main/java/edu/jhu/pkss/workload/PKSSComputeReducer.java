@@ -11,6 +11,9 @@ import org.apache.hadoop.mapreduce.Reducer;
 import java.util.ArrayList; 
 import java.util.Random;
 
+import edu.jhu.pkss.clustering.VectorizedObject;
+import edu.jhu.pkss.clustering.SparseDoubleVector;
+
 public class PKSSComputeReducer extends Reducer<LongWritable, Text, LongWritable, Text>
 {
     ArrayList<Integer> computeLocations = new ArrayList<Integer>();
