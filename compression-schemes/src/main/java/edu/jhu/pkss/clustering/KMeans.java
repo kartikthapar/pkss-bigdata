@@ -99,7 +99,7 @@ public class KMeans {
       if (i % Integer.parseInt(args[4]) == 0) {
         conf.setBoolean(PKSSReducer.ASSIGNMENT_OUTPUT_KEY, true);
         use_compressed_input = true;
-	iteration_to_read = i;
+	    iteration_to_read = i;
       }
       else {
         conf.setBoolean(PKSSReducer.ASSIGNMENT_OUTPUT_KEY, false);
@@ -141,7 +141,11 @@ public class KMeans {
 	  edu.jhu.pkss.clustering.InputFormat.setInputPaths (job, args[0]);
       else
 	  edu.jhu.pkss.clustering.InputFormat.setInputPaths (job, args[2] + iteration_to_read);
-      TextOutputFormat.setOutputPath (job, new Path (args[1] + (i + 1)));
+      
+      Path outputPath = new Path (args[1] + (i + 1));
+      if (fs.exists(outputPath))
+        fs.delete(outputPath, true);
+      TextOutputFormat.setOutputPath (job, outputPath);
 
       // force the split size to 8 megs (this is small!)
       TextInputFormat.setMinInputSplitSize (job, 1 * 1024 * 1024);
