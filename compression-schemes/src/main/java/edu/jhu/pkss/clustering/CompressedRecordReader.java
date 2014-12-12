@@ -83,6 +83,7 @@ public class CompressedRecordReader extends org.apache.hadoop.mapreduce.RecordRe
         strm.seek(fsplit.getStart());
         strm.read(buf);
         strm.close();
+        buf.rewind();
         
         decompressed_size = buf.getLong();
         objects_returned = 0;
