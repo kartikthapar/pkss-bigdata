@@ -22,8 +22,8 @@ public class InputFormat extends org.apache.hadoop.mapreduce.lib.input.FileInput
         if (context.getConfiguration().getBoolean(COMPRESSED_INPUT, false))
             return new CompressedRecordReader();
         else
-            //return new edu.jhu.pkss.clustering.TextRecordReader();
-	    return new org.apache.hadoop.mapreduce.lib.input.LineRecordReader();
+            return new edu.jhu.pkss.clustering.TextRecordReader();
+	    //return new org.apache.hadoop.mapreduce.lib.input.LineRecordReader();
     }
 
     private String[] getHostsForSplit(FileSystem fs, FileStatus file, long offset, long size)
