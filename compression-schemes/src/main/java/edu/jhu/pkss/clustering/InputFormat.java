@@ -81,10 +81,11 @@ public class InputFormat extends org.apache.hadoop.mapreduce.lib.input.FileInput
 
             while (bytesRemaining > 0)
             {
-                // FileSplit(path, start, length, hosts, in memory hosts);
                 long splitSize = Math.min(bytesRemaining, blockSize);
                 String[] hosts = getHostsForSplit(fs, file, bytesAllocated, splitSize);
+                // FileSplit(path, start, length, hosts, in memory hosts);
                 FileSplit cur_split = new FileSplit(path, bytesAllocated, splitSize, hosts);
+                splits.add(cur_split);
                 bytesRemaining -= splitSize;
                 bytesAllocated += splitSize;
             }
