@@ -56,13 +56,12 @@ public class KMeans {
       return 1;
     }
 
-    boolean use_compressed_input = false;
     // repeate the whole thing the correct number of times
     for (int i = 0; i < Integer.parseInt (args[3]); i++) {
 
       // Get the default configuration object
       Configuration conf = new Configuration ();
-
+      boolean use_compressed_input = false;
 
       // look at all of the files in the cluster file directory... start by getting the directory name
       String dirName;
@@ -92,7 +91,8 @@ public class KMeans {
 
       // Set whether the input is compressed *before* we decide that the output is compressed
       // and that future inputs are comopressed
-      conf.setBoolean(edu.jhu.pkss.clustering.InputFormat.COMPRESSED_INPUT, use_compressed_input);
+      // conf.setBoolean(edu.jhu.pkss.clustering.InputFormat.COMPRESSED_INPUT, use_compressed_input);
+      
       // Need to decide when to write assignemnts to do reshuffling
       if (i % Integer.parseInt(args[4]) == 0) {
         conf.setBoolean(PKSSReducer.ASSIGNMENT_OUTPUT_KEY, true);
@@ -102,6 +102,10 @@ public class KMeans {
         conf.setBoolean(PKSSReducer.ASSIGNMENT_OUTPUT_KEY, false);
       }
 
+      if (i == 0) {
+	  use_compressed_input = false;
+      }
+      conf.setBoolean(edu.jhu.pkss.clustering.InputFormat.COMPRESSED_INPUT, use_compressed_input);
       // get the new job
       Job job = Job.getInstance(conf);
       job.setJobName ("K-Means clustering");
