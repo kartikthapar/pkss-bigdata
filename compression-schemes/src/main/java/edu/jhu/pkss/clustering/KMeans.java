@@ -92,7 +92,7 @@ public class KMeans {
 
       // Set whether the input is compressed *before* we decide that the output is compressed
       // and that future inputs are comopressed
-      conf.setBoolean(edu.jhu.pkss.clustering.InputFormat.COMPRESSED_INPUT, true);
+      conf.setBoolean(edu.jhu.pkss.clustering.InputFormat.COMPRESSED_INPUT, use_compressed_input);
       // Need to decide when to write assignemnts to do reshuffling
       if (i % Integer.parseInt(args[4]) == 0) {
         conf.setBoolean(PKSSReducer.ASSIGNMENT_OUTPUT_KEY, true);
