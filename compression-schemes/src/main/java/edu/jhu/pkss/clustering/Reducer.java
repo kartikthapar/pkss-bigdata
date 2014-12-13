@@ -182,6 +182,7 @@ public class Reducer extends org.apache.hadoop.mapreduce.Reducer<LongWritable, T
         assign_strm.writeInt(bitBuffer.getBuffer().position());
         assign_strm.writeLong(currentUncompressedBytes);
         assign_strm.writeInt(currentNumElements);
+        assign_strm.write(bitBuffer.getBuffer().array());
     }
 
     private void updateData(String datapoint) {
