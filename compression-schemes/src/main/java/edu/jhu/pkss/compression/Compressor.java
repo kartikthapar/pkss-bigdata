@@ -6,4 +6,5 @@ public interface Compressor
 {
     byte[] compress(byte[] data) throws IOException;
     byte[] finish() throws IOException;
+    Compressor clone();
 }
