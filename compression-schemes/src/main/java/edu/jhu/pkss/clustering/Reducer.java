@@ -6,7 +6,6 @@ import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import java.util.List;
 import java.util.ArrayList;
@@ -14,7 +13,7 @@ import java.io.UnsupportedEncodingException;
 import java.io.IOException;
 import edu.jhu.pkss.compression.AdaptiveArithmeticImpl;
 
-public class PKSSReducer extends Reducer<LongWritable, Text, LongWritable, Text>
+public class Reducer extends org.apache.hadoop.mapreduce.Reducer<LongWritable, Text, LongWritable, Text>
 {
     // This is the directory containing one file per cluster
     // Each file contains the list of IDs of the data points

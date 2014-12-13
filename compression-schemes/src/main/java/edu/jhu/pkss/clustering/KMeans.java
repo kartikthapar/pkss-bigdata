@@ -83,7 +83,7 @@ public class KMeans {
       conf.set("compression", args[5]);
 
 
-      conf.set(PKSSReducer.ASSIGNMENT_OUTPUT_DIR_KEY, args[2] + (i + 1));
+      conf.set(Reducer.ASSIGNMENT_OUTPUT_DIR_KEY, args[2] + (i + 1));
       Map<Long, VectorizedObject> clusters = ReadClusterCenters(fs, dirName);
       int cluster_count = clusters.size();
       if (cluster_count <= 0)
@@ -97,16 +97,16 @@ public class KMeans {
       
       // Need to decide when to write assignemnts to do reshuffling
       if (i % Integer.parseInt(args[4]) == 0) {
-        conf.setBoolean(PKSSReducer.ASSIGNMENT_OUTPUT_KEY, true);
+        conf.setBoolean(Reducer.ASSIGNMENT_OUTPUT_KEY, true);
         use_compressed_input = true;
 	    iteration_to_read = i;
       }
       else {
-        conf.setBoolean(PKSSReducer.ASSIGNMENT_OUTPUT_KEY, false);
+        conf.setBoolean(Reducer.ASSIGNMENT_OUTPUT_KEY, false);
       }
       
       /*
-      conf.setBoolean(PKSSReducer.ASSIGNMENT_OUTPUT_KEY, true);
+      conf.setBoolean(Reducer.ASSIGNMENT_OUTPUT_KEY, true);
       if (i != 0) {
 	  use_compressed_input = true;
       }
@@ -126,7 +126,7 @@ public class KMeans {
 
       // tell Hadoop what mapper and reducer to use
       job.setMapperClass (PKSSMapper.class);
-      job.setReducerClass (PKSSReducer.class);
+      job.setReducerClass (Reducer.class);
 
       // set the input and output format class... these tell Haoop how to read/write to HDFS
       job.setInputFormatClass(edu.jhu.pkss.clustering.InputFormat.class);
