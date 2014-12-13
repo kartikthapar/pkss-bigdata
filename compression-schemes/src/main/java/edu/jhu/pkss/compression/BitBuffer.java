@@ -12,7 +12,7 @@ public class BitBuffer implements BitOutput
     private int currentByte;
     private int numBitsInCurrentByte;
 
-    private class Marker
+    public class Marker
     {
         public Marker(int BP, int bP, int value)
         {
@@ -56,19 +56,19 @@ public class BitBuffer implements BitOutput
 			writeBit(0);
     }
 
-    Marker mark()
+    public Marker mark()
     {
         return new Marker(buffer.position(), numBitsInCurrentByte, currentByte);
     }
 
-    void rewind(Marker m)
+    public void rewind(Marker m)
     {
         buffer.position(m.bytePosition);
         numBitsInCurrentByte = m.bitPosition;
         currentByte = m.bitValue;
     }
 
-    ByteBuffer getBuffer()
+    public ByteBuffer getBuffer()
     {
         return buffer;
     }
