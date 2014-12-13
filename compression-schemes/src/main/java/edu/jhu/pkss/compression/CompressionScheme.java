@@ -4,5 +4,5 @@ import java.io.IOException;
 
 public interface CompressionScheme {
     Compressor newCompressor();
-    Decompressor newDecompressor();
+    byte[] decompress(byte[] data) throws IOException;
 }
