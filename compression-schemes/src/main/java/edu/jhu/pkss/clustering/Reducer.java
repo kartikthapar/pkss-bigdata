@@ -11,7 +11,12 @@ import java.util.List;
 import java.util.ArrayList;
 import java.io.UnsupportedEncodingException;
 import java.io.IOException;
+import java.nio.ByteBuffer;
+
 import edu.jhu.pkss.compression.AdaptiveArithmeticImpl;
+import edu.jhu.pkss.compression.BitBuffer;
+import edu.jhu.pkss.compression.CompressionScheme;
+import edu.jhu.pkss.compression.Compressor;
 
 public class Reducer extends org.apache.hadoop.mapreduce.Reducer<LongWritable, Text, LongWritable, Text>
 {
@@ -22,9 +27,12 @@ public class Reducer extends org.apache.hadoop.mapreduce.Reducer<LongWritable, T
     private Configuration conf;
     private long currentBlockAmount;
     private int currentNumElements;
-    private long blockSize;   
-    private StringBuilder currentData;
- 
+    private long blockSize;
+    private BitBuffer bitBuffer;
+    private CompressionScheme scheme;
+    private Compressor compressor;
+    private boolean writeAssignments;
+
     public static final String ASSIGNMENT_OUTPUT_DIR_KEY = "assignmentOutput";
     public static final String ASSIGNMENT_OUTPUT_KEY = "writeAssignments";
     public static final short REPLICATION_FACTOR = 1;
@@ -35,64 +43,72 @@ public class Reducer extends org.apache.hadoop.mapreduce.Reducer<LongWritable, T
         conf = context.getConfiguration();
         blockSize = TextInputFormat.getMaxSplitSize(context);
 
-        //TODO set an initial capacity
-        currentData = new StringBuilder();
         assignment_dir = new org.apache.hadoop.fs.Path(conf.get(ASSIGNMENT_OUTPUT_DIR_KEY));
+
+        writeAssignments = context.getConfiguration().getBoolean(ASSIGNMENT_OUTPUT_KEY, true);
+
+        if (writeAssignments)
+        {
+            bitBuffer = new BitBuffer(ByteBuffer.allocate((int)blockSize));
+
+            switch(conf.get("compression")) {
+                case "arith":
+                    scheme = new AdaptiveArithmeticImpl();
+                    break;
+                case "lz4":
+                    // TODO bring LZ4 into the new compressionscheme
+                    //OurLz4Impl lz = new OurLz4Impl();
+                    //compressed = lz.compress(currentData.toString().getBytes("UTF-8"));
+                    break;
+                case "bzip2":
+                    //TODO complete me
+                    break;
+            }
+            compressor = scheme.newCompressor(bitBuffer);
+        }
     }
 
     @Override
     public void reduce(LongWritable key, Iterable<Text> Value, Context context)
         throws java.io.IOException, InterruptedException
     {
-        // These are the intermediate results of computing the new cluster center
+        long counter = 0;
+        VectorizedObject thisCluster = null;
 
-        boolean writeAssignments = context.getConfiguration().getBoolean(ASSIGNMENT_OUTPUT_KEY, true);
-
-        FSDataOutputStream assign_strm = null;
+        FSDataOutputStream assign_strm;
         if (writeAssignments)
         {
-            // These are used for storing the cluster assignments
-            // TODO make the write optional depending on configuration
             FileSystem fs = FileSystem.get(context.getConfiguration());
             Path cluster_output = new Path(assignment_dir, "Cluster"+key.toString());
             assign_strm = fs.create(cluster_output, REPLICATION_FACTOR);
         }
 
-        processInputData(assign_strm, key, Value, context, writeAssignments); 
-    }
-
-
-    private void processInputData(FSDataOutputStream assign_strm, LongWritable key, Iterable<Text> Value, Context context, boolean writeAssignments)
-        throws IOException, InterruptedException
-    {
-        long counter = 0;
-        VectorizedObject thisCluster = null;       
- 
         for (Text curText : Value)
+        {
+            VectorizedObject curDataPoint = new VectorizedObject(curText.toString());
+            if (thisCluster == null) // FIXME Paul doesn't really like doing this check on every iteration
             {
-                VectorizedObject curDataPoint = new VectorizedObject(curText.toString());
-                if (thisCluster == null) // FIXME Paul doesn't really like doing this check on every iteration
-                {
-                    thisCluster = curDataPoint;
-                }
-                else
-                {
-                    curDataPoint.getLocation().addMyselfToHim(thisCluster.getLocation());
-                }
-
-                counter += 1;
-
-                if (writeAssignments)
-                {
-                    curDataPoint.setValue(key.toString());
-
-                    if (needToCreateNewBlock(curDataPoint.writeOut())) {
-                        writeCompressedBytes(assign_strm);
-                        resetVariables();
-                    }  
-                    updateData(curDataPoint.writeOut()); 
-                }
+                thisCluster = curDataPoint;
             }
+            else
+            {
+                curDataPoint.getLocation().addMyselfToHim(thisCluster.getLocation());
+            }
+
+            counter += 1;
+
+            if (writeAssignments)
+            {
+                curDataPoint.setValue(key.toString());
+
+                // Try to write this data point into the block.
+                if (needToCreateNewBlock(curDataPoint.writeOut())) {
+                    writeCompressedBytes(assign_strm);
+                    resetVariables();
+                }
+                updateData(curDataPoint.writeOut());
+            }
+        }
 
 
         if (writeAssignments)
@@ -100,7 +116,7 @@ public class Reducer extends org.apache.hadoop.mapreduce.Reducer<LongWritable, T
             if (currentData.length() > 0) {
                 writeCompressedBytes(assign_strm);
             }
-            
+
             assign_strm.close();
         }
 
@@ -113,7 +129,7 @@ public class Reducer extends org.apache.hadoop.mapreduce.Reducer<LongWritable, T
    private void updateData(String datapoint) {
         currentData.append(datapoint + "\n");
         currentBlockAmount += datapoint.length() + 1;
-        currentNumElements++;        
+        currentNumElements++;
    }
 
 
@@ -131,40 +147,14 @@ public class Reducer extends org.apache.hadoop.mapreduce.Reducer<LongWritable, T
     private void writeCompressedBytes(FSDataOutputStream stream)
         throws IOException
     {
-    		byte[] compressed = null;// = new byte[(int)blockSize];
-
-            // try {
-
-                //may need to be slightly refactored
-                switch(conf.get("compression")) {
-                    case "arith":
-                        //AdaptiveArithmeticImpl arith = new AdaptiveArithmeticImpl();
-                        // TODO the actual compression and stuff
-                        // compressed = arith.compress(currentData.toString().getBytes("UTF-8"));
-			break;
-                    case "lz4":
-                        // TODO bring LZ4 into the new compressionscheme
-                        //OurLz4Impl lz = new OurLz4Impl();
-                        //compressed = lz.compress(currentData.toString().getBytes("UTF-8"));
-                        break;
-
-                    case "bzip2":
-                        //TODO complete me
-                        break;        
-                }
-                stream.writeInt(compressed.length);
-                stream.writeLong(currentBlockAmount);
-                stream.writeInt(currentNumElements);
-                stream.write(compressed, 0, compressed.length);
-                // FIXME this number is the length of the header
-                for (int i = compressed.length + 16; i < blockSize; ++i)
-                    stream.write(0);
-            // Commented out so that the hadoop job comes crashing to a halt
-            // when something goes wrong.  We can't find errors like this
-            //} catch(UnsupportedEncodingException e) {
-    		//	e.printStackTrace();
-    		//} catch(IOException e) {
-    		//	e.printStackTrace();
-    		//}
+        byte[] compressed = null;// = new byte[(int)blockSize];
+        //may need to be slightly refactored
+        stream.writeInt(compressed.length);
+        stream.writeLong(currentBlockAmount);
+        stream.writeInt(currentNumElements);
+        stream.write(compressed, 0, compressed.length);
+        // FIXME this number is the length of the header
+        for (int i = compressed.length + 16; i < blockSize; ++i)
+            stream.write(0);
 	}
 }
