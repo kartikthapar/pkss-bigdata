@@ -1,0 +1,147 @@
+\documentclass[paper=letter, fontsize=11pt]{scrartcl}
+\usepackage[T1]{fontenc}
+\usepackage{fourier}
+
+\usepackage[english]{babel}
+\usepackage[protrusion=true,expansion=true]{microtype}	
+\usepackage{amsmath,amsfonts,amsthm} % Math packages
+\usepackage[pdftex]{graphicx}	
+\usepackage{url}
+
+\usepackage{graphicx}
+\graphicspath{ {images/} }
+
+%%% Custom sectioning
+\usepackage{sectsty}
+\allsectionsfont{\centering \normalfont\scshape}
+
+%%% Custom headers/footers (fancyhdr package)
+\usepackage{fancyhdr}
+\pagestyle{fancyplain}
+\fancyhead{}											% No page header
+\fancyfoot[L]{}											% Empty 
+\fancyfoot[C]{}											% Empty
+\fancyfoot[R]{\thepage}									% Pagenumbering
+\renewcommand{\headrulewidth}{0pt}			% Remove header underlines
+\renewcommand{\footrulewidth}{0pt}				% Remove footer underlines
+\setlength{\headheight}{13.6pt}
+
+%%% Equation and float numbering
+\numberwithin{equation}{section}		% Equationnumbering: section.eq#
+\numberwithin{figure}{section}			% Figurenumbering: section.fig#
+\numberwithin{table}{section}				% Tablenumbering: section.tab#
+
+
+%%% Maketitle metadata
+\newcommand{\horrule}[1]{\rule{\linewidth}{#1}} 	% Horizontal rule
+
+\title{
+		\vspace{-1in} 	
+		\usefont{OT1}{bch}{b}{n}
+		\horrule{1pt} \\[0.4cm]
+	    \normalfont \textsc{Johns Hopkins University \\
+		Big Data, Small Languages, \\ Scalable Systems | CS 600.615} \\ [20pt]
+		\huge Physical Layout Optimization\\
+		\horrule{1pt} \\[0.5cm]
+}
+\author{
+		\normalfont
+        Paul O Neil \\
+        Simar Preet Singh\\
+        Steve Pearlman\\
+        Kartik Thapar\\[-3pt]		\normalsize
+}
+\date{}
+
+
+%%% Begin document
+\begin{document}
+\maketitle
+\section{Absract}
+
+
+
+\section{Introduction}
+
+
+At its core the Hadoop essentially consists of HDFS, MapReduce and YARN. The HDFS provides a fault tolerant distributed file system designed to be deployed on commodity servers with the idea that by distributing storage and computation across many servers it can scale to a huge pool of storage while remaining economical. Every HDFS cluster basically comprises of a single NameNode which manages the cluster metadata and multiple DataNodes which store the data. By exposing a file system namespace it allows user data to be stored as HDFS files which consist of a number of blocks, typically 64 MB in size. Each of these blocks are replicated and stored on different DataNodes in order to provide better access and resilience to failure. Another important component is the YARN resource management platform which is primarily responsible for managing the compute resources in the clusters. It acts as a cluster scheduler and accepts requests from the MapReduce Application Manager. In the context of Map Reduce, the requests are for the Mappers and Reducers. \\
+
+One of the key ideas here is for minimal motion of data which means that MapReduce moves compute processes to the data on HDFS instead of doing it the other way around, thus the processing tasks can occur on the physical node where the data resides. This significantly reduces the network I/O patterns keeping it mostly to the local disk or within the same rack providing very high aggregate read/write bandwidth.\\
+
+The motivation here is to exploit this concept of data locality to the best of our advantage.  Considering the fact that data in the same cluster will have similar properties and query patterns are likely to correlate with clusters, we present a method to rearrange the input data set based on these cluster assignments in order to reduce the network I/O patterns.( /improving network throughput ??? is this correct usage?)
+Another advantage in favor of our approach of co-locating the data within same clusters is that we can get better compression results because the clustered data is more similar thereby giving better quality compression.
+
+
+\section{Prior Work}
+
+
+
+\section{Datasets}
+Our initial proposal was to use spectral data from the Sloan Digital Sky Survey.  The clusters in the data would correspond to different types of physical objects, e.g. stars at different points in their lives or different classes of galaxies.  Unfortunately, it was difficult to obtain a large, relevant dataset.  Most of the raw spectral data is not suitable for use in a clustering algorithm, since the spectral measurements do not directly reveal physical properties.  We decided that feature extraction from these datasets was not in the interests of the project and that there ware not enough pre-calculated physical parameters to have an interesting sample.
+
+Instead, we constructed randomized data sets that should be amenable to our methods.  The data are 1024 dimensional vectors drawn from 20 randomly chosen clusters of varying sizes.  We produced two data sets: 10MB and 10GB.  Though the datasets are tagged with their cluster when they are produced, the tags are ignored at the start of clustering.
+
+
+\section{Methods and Software}
+
+The data was divided into clusters using the K-Means algorithm.
+The number of iterations was chosen arbitrarily (TODO we should probably fix that).
+After a similarly arbitrary (TODO) number of iterations, the MapReduce job produces a new set of files to be used as input for the following iterations.
+Reading the data set from HDFS is a significant cost, so the input files are compressed, reducing the amount of data read from HDFS.
+
+Co-locating data within the same cluster has benefits.
+Co-location should improve the quality of the compression, since similar data are in the same cluster.
+Given that a researcher is interested in clustering the data, they will likely be intereseted in querying those clusters.
+With the data physically grouped into those clusters, it is easier for the MapReduce framework to reduce the amount of network traffic needed to do computations on that data.  For example, the reducer for a highly selective query can be scheduled on the same node as the Mappers that generated the data.
+
+With the goal of evaluating the effect of the reorganized data set and compression, we assembled a sample workload.
+The workload performs different operations on the different cluster, each interested in a different subspace of the dataset.
+That is, the queries on cluster A compute an aggregate using fields a, b, and c, while the queries on cluster B could sample values from the columns d, e, and f.
+
+TODO something about arithmetic coding goes in here.
+
+\section{Server Setup}
+We deployed the entire system into the cluster via Docker.
+There are 4 container images:
+\begin{enumerate}
+\item DNS - Runs \texttt{dnsmasq} to provide DNS to the other containers
+\item Resource Manager - Runs the YARN resource manager
+\item Name Node - Runs the HDFS Name Node
+\item Worker - Runs both an HDFS data node and a YARN Node Manager
+\end{enumerate}
+
+The services in each container are controlled by \texttt{runit}.  The Resource Manager, Name Node, and Worker images are all derived from a common Hadoop image that provides common configuration options.
+
+Configuring networking correctly in the containers was a significant challenge.
+While \texttt{pipework} provided the best solution, a new network interface inside the container with a cluster accessible IP address, there were still issues.
+Even with a DNS server running, the processes in the containers preferred to identify themselves with their first network interface, which was not reachable from other servers in the cluster.
+In particular, the HDFS Data Node processes would attempt to contact the Name Node and identify to it using the wrong address.
+Modifying the \texttt{/etc/hosts} file in each of the containers forced them to identify with the desired IP address, but the change will not be persistent across container restarts.
+
+Other minor issues included logging, which was never resolved, and ambiguities in setting the configuration. Logs from the Hadoop processes are sent to the console, which was in turn attached to nothing.  We worked around this by starting the processes on a command line instead of via \texttt{runit} when we wanted to monitor the output.  While Hadoop is a wildly popular framework, the official documentation is very sparse.  For instance, there is no easily found comprehensive list of documentation options.  The ``Cluster Setup'' tutorial provides a bare minimum and there is nothing more exhaustive.
+
+
+\section{Results}
+
+We are unable to read and write compressed data properly.
+The \texttt{RecordReader} is unable to read all of the compressed records within a block.
+Generally it is able to read the few before failing to parse the input, which appears corrupted.
+The source of the corruption is not clear.
+
+\section{Future Work}
+Another version of our techniques would reorganize the data within each block into a column oriented format.  The column oriented strategy would likely increase the compression ratio, since data elements in the same column are similar.  Delta-encoding along each column could be particularly effective.  Switching the orientation would be unlikely to have a negative impact on performance; in-memory reorganization of the data would be relatively efficient, so the cost of failure is low.
+
+Further instrumentation of the queries in the workload could lead to breaking the records in some clusters 
+
+Challenge when implementing other compression systems is maintaining the numerical accuracy of the results.  This is particularly important given the scientific applications we are targeting.
+
+\section{Conclusion}
+
+
+\section{References}
+
+Our programs are available at:
+\texttt{https://github.com/kartikthapar/pkss-bigdata}
+
+%%% End document
+\end{document}
