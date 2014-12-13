@@ -126,6 +126,10 @@ public class Reducer extends org.apache.hadoop.mapreduce.Reducer<LongWritable, T
                     // If that succeeded, rewind to before the end of stream marker
                     bitBuffer.rewind(nextMark);
                     compressor = nextCompressor;
+
+                    currentNumElements += 1;
+                    // FIXME don't do the writeOut here
+                    currentUncompressedBytes += curDataPoint.writeOut().length();
                 }
                 catch (java.nio.BufferOverflowException e)
                 {
@@ -144,6 +148,10 @@ public class Reducer extends org.apache.hadoop.mapreduce.Reducer<LongWritable, T
                     resetVariables();
                     // Trying again
                     compressor.compress(currentBytes);
+
+                    currentNumElements += 1;
+                    // FIXME don't do the writeOut here
+                    currentUncompressedBytes += curDataPoint.writeOut().length();
 
                     // If this one fails, then that means that the compressed
                     // data is larger than a block, and that's never going to
