@@ -21,14 +21,15 @@ public class AdaptiveArithmeticImpl implements CompressionScheme
     public class AdaptiveArithmeticCompressor implements Compressor
     {
         private FrequencyTable freq;
-        private OutputStream output;
+        private BitBuffer output;
         private ArithmeticEncoder enc;
 
-        public AdaptiveArithmeticCompressor(OutputStream output)
+        public AdaptiveArithmeticCompressor(BitBuffer output)
         {
             // Initialize with all symbol frequencies at 1
             freq = new SimpleFrequencyTable(new FlatFrequencyTable(257));
-            enc = new ArithmeticEncoder(new BitOutputStream(output));
+            this.output = output;
+            enc = new ArithmeticEncoder(output);
         }
 
         @Override
@@ -59,7 +60,7 @@ public class AdaptiveArithmeticImpl implements CompressionScheme
     }
 
     @Override
-    public Compressor newCompressor(OutputStream output)
+    public Compressor newCompressor(BitBuffer output)
     {
         return new AdaptiveArithmeticCompressor(output);
     }
