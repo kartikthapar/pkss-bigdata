@@ -61,4 +61,9 @@ public class BitBuffer implements BitOutput
         numBitsInCurrentByte = m.bitPosition;
         currentByte = m.bitValue;
     }
+
+    ByteBuffer getBuffer()
+    {
+        return buffer;
+    }
 }
