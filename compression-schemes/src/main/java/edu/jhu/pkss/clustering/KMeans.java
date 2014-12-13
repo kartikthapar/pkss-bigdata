@@ -125,7 +125,7 @@ public class KMeans {
       job.setOutputValueClass (Text.class);
 
       // tell Hadoop what mapper and reducer to use
-      job.setMapperClass (PKSSMapper.class);
+      job.setMapperClass (Mapper.class);
       job.setReducerClass (Reducer.class);
 
       // set the input and output format class... these tell Haoop how to read/write to HDFS

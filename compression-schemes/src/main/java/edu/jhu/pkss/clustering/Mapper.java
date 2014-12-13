@@ -10,9 +10,8 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.mapreduce.Mapper;
 
-public class PKSSMapper extends Mapper<Long, VectorizedObject, LongWritable, Text>
+public class Mapper extends org.apache.hadoop.mapreduce.Mapper<Long, VectorizedObject, LongWritable, Text>
 {
     private Map<Long, VectorizedObject> oldClusters;
 
