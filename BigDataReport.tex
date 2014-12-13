@@ -42,11 +42,12 @@
 	    \normalfont \textsc{Johns Hopkins University \\
 		Big Data, Small Languages, \\ Scalable Systems | CS 600.615} \\ [20pt]
 		\huge Physical Layout Optimization\\
+		based on Adaptive and Segmented Storage of Large Data Sets
 		\horrule{1pt} \\[0.5cm]
 }
 \author{
 		\normalfont
-        Paul O Neil \\
+        Paul O'Neil \\
         Simar Preet Singh\\
         Steve Pearlman\\
         Kartik Thapar\\[-3pt]		\normalsize
@@ -57,68 +58,75 @@
 %%% Begin document
 \begin{document}
 \maketitle
-\section{Absract}
 
 
+%\section{Absract}
+
+\abstract{We describe a novel system for online optimization of physical layout for array data and its implementation on top of Hadoop.
+Based on the assumption that researchers are interested in the clusters in their data set, we leverage those clusters to align the data with their access patterns.
+With the data physically grouped into those clusters, it is easier for the MapReduce framework to reduce the amount of network traffic needed to do computations on that data.
+}
 
 \section{Introduction}
 
 
-At its core the Hadoop essentially consists of HDFS, MapReduce and YARN. The HDFS provides a fault tolerant distributed file system designed to be deployed on commodity servers with the idea that by distributing storage and computation across many servers it can scale to a huge pool of storage while remaining economical. Every HDFS cluster basically comprises of a single NameNode which manages the cluster metadata and multiple DataNodes which store the data. By exposing a file system namespace it allows user data to be stored as HDFS files which consist of a number of blocks, typically 64 MB in size. Each of these blocks are replicated and stored on different DataNodes in order to provide better access and resilience to failure. Another important component is the YARN resource management platform which is primarily responsible for managing the compute resources in the clusters. It acts as a cluster scheduler and accepts requests from the MapReduce Application Manager. In the context of Map Reduce, the requests are for the Mappers and Reducers. \\
+At its core the Hadoop essentially consists of HDFS, MapReduce and YARN. The HDFS provides a fault tolerant distributed file system designed to be deployed on commodity servers with the idea that by distributing storage and computation across many servers it can scale to a huge pool of storage while remaining economical. Every HDFS cluster basically comprises of a single Name Node which manages the filesystem metadata and multiple Data Nodes which store the data. By exposing a file system namespace it allows user data to be stored as HDFS files which consist of a number of blocks, typically 64 MB in size. Each of these blocks are replicated and stored on different Data Nodes in order to provide better access and resilience to failure. Another important component is the YARN resource management platform which is primarily responsible for managing the compute resources in the clusters. It acts as a cluster scheduler and accepts requests from the MapReduce Application Manager. In the context of Map Reduce, the requests are for the Mappers and Reducers. \\
 
-One of the key ideas here is for minimal motion of data which means that MapReduce moves compute processes to the data on HDFS instead of doing it the other way around, thus the processing tasks can occur on the physical node where the data resides. This significantly reduces the network I/O patterns keeping it mostly to the local disk or within the same rack providing very high aggregate read/write bandwidth.\\
+One of the key ideas here is for minimal movement of data which means that MapReduce moves compute processes to the data on HDFS instead of doing it the other way around.  Thus, the processing tasks can occur on the physical node where the data resides. This significantly reduces the network I/O patterns keeping it mostly to the local disk or within the same rack providing very high aggregate read and write bandwidth.\\
 
-The motivation here is to exploit this concept of data locality to the best of our advantage.  Considering the fact that data in the same cluster will have similar properties and query patterns are likely to correlate with clusters, we present a method to rearrange the input data set based on these cluster assignments in order to reduce the network I/O patterns.( /improving network throughput ??? is this correct usage?)
-Another advantage in favor of our approach of co-locating the data within same clusters is that we can get better compression results because the clustered data is more similar thereby giving better quality compression.
+The motivation here is to exploit this concept of data locality to the best of our advantage.  Considering the fact that data in the same cluster will have similar properties and query patterns are likely to correlate with clusters, we present a method to rearrange the input data set based on these cluster assignments in order to reduce the network I/O patterns and improve throughput. Another advantage in favor of our approach of co-locating the data within same clusters is that we can get better compression results, since the clustered data is more homogenous thereby giving better quality compression.
 
 
 \section{Prior Work}
+There are a variety of database-style packages that run on top of Hadoop and HDFS.  Systems like Hive and Pig allow users to write SQL-like queries on their data stored in HDFS; the queries are compiled into a series of MapReduce jobs.  Other tools, such as Parquet, provide a re-implementation of the storage mechanisms already present in Hadoop.  Parquet allows the developer to specify a schema for their data, and arranges it in a column oriented format in HDFS. \\
 
-
-
-\section{Datasets}
-Our initial proposal was to use spectral data from the Sloan Digital Sky Survey.  The clusters in the data would correspond to different types of physical objects, e.g. stars at different points in their lives or different classes of galaxies.  Unfortunately, it was difficult to obtain a large, relevant dataset.  Most of the raw spectral data is not suitable for use in a clustering algorithm, since the spectral measurements do not directly reveal physical properties.  We decided that feature extraction from these datasets was not in the interests of the project and that there ware not enough pre-calculated physical parameters to have an interesting sample.
-
-Instead, we constructed randomized data sets that should be amenable to our methods.  The data are 1024 dimensional vectors drawn from 20 randomly chosen clusters of varying sizes.  We produced two data sets: 10MB and 10GB.  Though the datasets are tagged with their cluster when they are produced, the tags are ignored at the start of clustering.
+Unlike these systems, where the schema is specified up front for the entire data set, our system is adaptive and online.  Though there is a single schema for all the data, namely a fixed size vector, our system splits the data into similar chunks in an effort to perform better locally.
 
 
 \section{Methods and Software}
 
-The data was divided into clusters using the K-Means algorithm.
-The number of iterations was chosen arbitrarily (TODO we should probably fix that).
-After a similarly arbitrary (TODO) number of iterations, the MapReduce job produces a new set of files to be used as input for the following iterations.
-Reading the data set from HDFS is a significant cost, so the input files are compressed, reducing the amount of data read from HDFS.
+Working under the premise that Co-locating data within the same cluster will provide benefits in terms of both better query processing time and compression quality; our first goal was to cluster the data. For this purpose the approach we have used here is the K-Means clustering algorithm, but the idea is essentially independent of this choice. We start with a clustering task on certain input and after a certain number of iterations the MapReduce job produces new set of files that are used for the subsequent iterations. This is done so that the MapReduce job can utilize the similarities in clustered intermediate input data in these later iterations whereby improving its performance. \\
 
-Co-locating data within the same cluster has benefits.
-Co-location should improve the quality of the compression, since similar data are in the same cluster.
-Given that a researcher is interested in clustering the data, they will likely be intereseted in querying those clusters.
-With the data physically grouped into those clusters, it is easier for the MapReduce framework to reduce the amount of network traffic needed to do computations on that data.  For example, the reducer for a highly selective query can be scheduled on the same node as the Mappers that generated the data.
+Additionally, two of the optimizations we looked at here were the number of iterations itself, as well the number of iterations after which we rewrite the input files. These can be varied based on experiments or prior knowledge in order to best optimize the tradeoff between using better compression and the cost of producing new data files. \\
 
-With the goal of evaluating the effect of the reorganized data set and compression, we assembled a sample workload.
-The workload performs different operations on the different cluster, each interested in a different subspace of the dataset.
+Initially we wrote these intermediate cluster assignment files to only contain the keys assigned to every cluster, and then rearrange the input files based on these key values. But during the implementation we realized a better approach would be to directly rewrite the entire input files as intermediate results to be used in later iterations, and delete them once we had data with better convergence. \\
+
+Another important issue is the fact that reading the data set from HDFS incurs significant cost. Compression of this data reduces this cost, and there are various popular techniques used which can utilize the inherent properties of the data set being considered. Also, we identified that in our case the co-location of data should considerably improve the quality of the compression, since data in the same cluster share similarities which can be exploited by the compression techniques. \\
+
+Accordingly, we considered various different techniques such as arithmetic coding, bzip2 and lz4 for compression of the input data in the HDFS. Arithmetic coding, which is an entropy based encoding meant for lossless compression, seemed a suitable choice for our needs. It is a clever generalization of Huffman coding allowing each symbol to be coded with a non-whole number of bits when averaged over the entire message, thus improving compression efficiency. \\
+
+Given that a researcher is interested in clustering the data, they will likely be intereseted in querying those clusters. With the data physically grouped into those clusters, it is easier for the MapReduce framework to reduce the amount of network traffic needed to do computations on that data.  For example, the reducer for a highly selective query can be scheduled on the same node as the Mappers that generated the data. Furthermore, it is easy to filter data that is not in the cluster being queried, reducing the number of records read from HDFS. \\
+
+In order to evaluate the effect of the reorganized data set and compression, we assembled a sample workload. The workload performs different operations on the different cluster, each interested in a different subspace of the dataset.
 That is, the queries on cluster A compute an aggregate using fields a, b, and c, while the queries on cluster B could sample values from the columns d, e, and f.
+Our workload chooses a different subspace of the data for each cluster and computes a relatively simple function over those attributes.
+Since there is not that much computation, the performance of the entire job will be largely dependent on the I/O performance.\\
 
-TODO something about arithmetic coding goes in here.
+\section{Datasets}
+Our initial proposal was to use spectral data from the Sloan Digital Sky Survey.  The clusters in the data would correspond to different types of physical objects, e.g. stars at different points in their lives or different classes of galaxies.  Unfortunately, it was difficult to obtain a large, relevant data set.  Most of the raw spectral data is not suitable for use in a clustering algorithm, since the spectral measurements do not directly reveal physical properties.  We decided that feature extraction from these data sets was not in the interests of the project and that there ware not enough precalculated physical parameters to have an interesting sample. \\
+
+Instead, we constructed randomized data sets that should be amenable to our methods.  The data are 1024 dimensional vectors drawn from 20 randomly chosen clusters of varying sizes.  We produced two data sets: 10MB and 10GB.  Though the datasets are tagged with their cluster when they are produced, the tags are ignored at the start of clustering.
+
 
 \section{Server Setup}
 We deployed the entire system into the cluster via Docker.
 There are 4 container images:
-\begin{enumerate}
+\begin{itemize}
 \item DNS - Runs \texttt{dnsmasq} to provide DNS to the other containers
 \item Resource Manager - Runs the YARN resource manager
 \item Name Node - Runs the HDFS Name Node
 \item Worker - Runs both an HDFS data node and a YARN Node Manager
-\end{enumerate}
+\end{itemize}
 
-The services in each container are controlled by \texttt{runit}.  The Resource Manager, Name Node, and Worker images are all derived from a common Hadoop image that provides common configuration options.
+The services in each container are controlled by \texttt{runit}.  The Resource Manager, Name Node, and Worker images are all derived from a common Hadoop image that provides common configuration options.  The DNS container and the resource manager ran on the same server, as did the name node and a single worker.  There were two other workers on their own servers. \\
 
 Configuring networking correctly in the containers was a significant challenge.
 While \texttt{pipework} provided the best solution, a new network interface inside the container with a cluster accessible IP address, there were still issues.
 Even with a DNS server running, the processes in the containers preferred to identify themselves with their first network interface, which was not reachable from other servers in the cluster.
 In particular, the HDFS Data Node processes would attempt to contact the Name Node and identify to it using the wrong address.
-Modifying the \texttt{/etc/hosts} file in each of the containers forced them to identify with the desired IP address, but the change will not be persistent across container restarts.
+Modifying the \texttt{/etc/hosts} file in each of the containers forced them to identify with the desired IP address, but the change will not be persistent across container restarts. \\
 
-Other minor issues included logging, which was never resolved, and ambiguities in setting the configuration. Logs from the Hadoop processes are sent to the console, which was in turn attached to nothing.  We worked around this by starting the processes on a command line instead of via \texttt{runit} when we wanted to monitor the output.  While Hadoop is a wildly popular framework, the official documentation is very sparse.  For instance, there is no easily found comprehensive list of documentation options.  The ``Cluster Setup'' tutorial provides a bare minimum and there is nothing more exhaustive.
+Other minor issues included logging, which was never resolved, and ambiguities in setting the configuration. Logs from the Hadoop processes are sent to the console, which was in turn attached to nothing.  We worked around this by starting the processes on a command line instead of via \texttt{runit} when we wanted to monitor the output.  While Hadoop is a wildly popular framework, the official documentation is very sparse.  For instance, there is no easily found comprehensive list of documentation options.  The ''Cluster Setup'' tutorial provides a bare minimum and there is nothing more exhaustive.
 
 
 \section{Results}
@@ -126,22 +134,69 @@ Other minor issues included logging, which was never resolved, and ambiguities i
 We are unable to read and write compressed data properly.
 The \texttt{RecordReader} is unable to read all of the compressed records within a block.
 Generally it is able to read the few before failing to parse the input, which appears corrupted.
-The source of the corruption is not clear.
+The source of the corruption is not clear. \\
+
+Running an iteration of K-Means on the 10MB data set takes about 40 seconds.  Most of this time is Hadoop initialization and cleanup.
 
 \section{Future Work}
-Another version of our techniques would reorganize the data within each block into a column oriented format.  The column oriented strategy would likely increase the compression ratio, since data elements in the same column are similar.  Delta-encoding along each column could be particularly effective.  Switching the orientation would be unlikely to have a negative impact on performance; in-memory reorganization of the data would be relatively efficient, so the cost of failure is low.
+Another version of our techniques would reorganize the data within each block into a column oriented format.  The column oriented strategy would likely increase the compression ratio, since data elements in the same column are similar.  Delta-encoding along each column could be particularly effective.  Switching the orientation would be unlikely to have a negative impact on performance; in-memory reorganization of the data would be relatively efficient, so the cost of failure is low. \\
 
-Further instrumentation of the queries in the workload could lead to breaking the records in some clusters 
-
-Challenge when implementing other compression systems is maintaining the numerical accuracy of the results.  This is particularly important given the scientific applications we are targeting.
+Further instrumentation of the queries in the workload could lead to breaking the records in some clusters into groups based on how often they are accessed.  The groups could be written to different files to further reduce the amount of data read from HDFS in the common cases.  The second layer of segmentation may be particularly effective because it can be different from cluster to cluster. 
 
 \section{Conclusion}
-
-
+Our prototype system demonstrates a different approach to layout optimization.  We have described the potential benefits of the approach and developed a system implementing our approach.
+% I would put something about results here, but we don't really have any
+% I guess this should do it
+% Alternately just say it was a great learning experience working 
+% I don't think I have anything else to add. I just did a quick proofreading pass.
+% It looks fine
+% Then lets turn it in.  Would you like to send it in?
+%Sure I'm okay with that
+% Nah, you do it
+% OK
+% Thanks!! :)
+% Can you put the latex on github then?
+% Sure
 \section{References}
+\begin{itemize}
+\item Apache Hadoop: \\
+    \texttt{https://hadoop.apache.org/}
 
-Our programs are available at:
-\texttt{https://github.com/kartikthapar/pkss-bigdata}
+\item HDFS Architecture: \\
+    \texttt{http://hadoop.apache.org/docs/r1.0.4/hdfs\_design.html}
+
+\item Cluster Setup: \\
+    \texttt{http://hadoop.apache.org/docs/stable/hadoop-project-dist\\/hadoop-common/ClusterSetup.html}
+
+\item Apache Hadoop YARN: \\
+    \texttt{http://hadoop.apache.org/docs/current/hadoop-yarn/hadoop\\-yarn-site/YARN.html}
+    
+\item Docker, virtual containers :\\
+    \texttt{https://www.docker.com/}
+
+\item Apache Hive: \\
+    \texttt{https://hive.apache.org/}
+
+\item Apache Parquet, columnar storage: \\
+    \texttt{https://parquet.incubator.apache.org/}
+
+\item Apache Pig: \\
+    \texttt{https://pig.apache.org/}
+
+\item SDSS Data set: \\
+    \texttt{http://data.sdss3.org/sas/dr10/sdss/sspp/}
+    
+\item Primary source repository:\\
+    \texttt{https://github.com/kartikthapar/pkss-bigdata}
+
+\item The arithmetic coding implementation is based on: \\
+    \texttt{http://www.nayuki.io/page/arithmetic-coding-java}.
+
+\item Our implementation of the K-Means algorithm used: \\ 
+    \texttt{http://cmj4.web.rice.edu/MapRedKMeans.html} as a starting point.
+
+
+\end{itemize}
 
 %%% End document
 \end{document}
