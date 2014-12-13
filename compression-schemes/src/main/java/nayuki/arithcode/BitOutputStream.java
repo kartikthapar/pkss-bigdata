@@ -7,7 +7,8 @@ import java.io.OutputStream;
 /**
  * A stream where bits can be written to. Because they are written to an underlying byte stream, the end of the stream is padded with 0's up to a multiple of 8 bits. The bits are written in big endian.
  */
-public final class BitOutputStream {
+public final class BitOutputStream implements BitOutput
+{
 	
 	// Underlying byte stream to write to.
 	private OutputStream output;

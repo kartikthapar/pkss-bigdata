@@ -17,7 +17,7 @@ import org.apache.hadoop.mapreduce.lib.input.FileSplit;
 import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 
-import nayuki.arithcode.AdaptiveArithmeticImpl;
+import edu.jhu.pkss.compression.AdaptiveArithmeticImpl;
 
 public class CompressedRecordReader extends org.apache.hadoop.mapreduce.RecordReader<Long, VectorizedObject>
 {

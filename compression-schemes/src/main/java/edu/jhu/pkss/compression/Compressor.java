@@ -4,7 +4,7 @@ import java.io.IOException;
 
 public interface Compressor
 {
-    byte[] compress(byte[] data) throws IOException;
-    byte[] finish() throws IOException;
-    Compressor clone();
+    public void compress(byte[] data) throws IOException;
+    public void finish() throws IOException;
+    public Compressor clone();
 }

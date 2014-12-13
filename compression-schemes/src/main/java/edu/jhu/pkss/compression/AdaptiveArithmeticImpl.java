@@ -1,44 +1,90 @@
-package nayuki.arithcode;
+package edu.jhu.pkss.compression;
 
-import edu.jhu.pkss.compression.CompressionScheme;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 
-public class AdaptiveArithmeticImpl implements CompressionScheme{
+import nayuki.arithcode.ArithmeticEncoder;
+import nayuki.arithcode.AdaptiveArithmeticDecompress;
+import nayuki.arithcode.BitInputStream;
+import nayuki.arithcode.BitOutputStream;
+import nayuki.arithcode.FrequencyTable;
+import nayuki.arithcode.FlatFrequencyTable;
+import nayuki.arithcode.SimpleFrequencyTable;
 
-		
-	public byte[] compress(byte[] b) {
-		InputStream in = new ByteArrayInputStream(b);
-		ByteArrayOutputStream out = new ByteArrayOutputStream();
-		
-		try {
-			BitOutputStream bitOut = new BitOutputStream(out);
-			AdaptiveArithmeticCompress.compress(in, bitOut);
-			bitOut.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+import edu.jhu.pkss.compression.CompressionScheme;
 
-		return out.toByteArray();
-	}
-	
-	
-	public byte[] decompress(byte[] b)
+public class AdaptiveArithmeticImpl implements CompressionScheme
+{
+    public class AdaptiveArithmeticCompressor implements Compressor
+    {
+        private FrequencyTable freq;
+        private OutputStream output;
+        private ArithmeticEncoder enc;
+
+        public AdaptiveArithmeticCompressor(OutputStream output)
+        {
+            // Initialize with all symbol frequencies at 1
+            freq = new SimpleFrequencyTable(new FlatFrequencyTable(257));
+            enc = new ArithmeticEncoder(new BitOutputStream(output));
+        }
+
+        @Override
+        public void compress(byte[] data) throws IOException
+        {
+            InputStream in = new ByteArrayInputStream(data);
+            while (true) {
+                int b = in.read();
+                if (b == -1)
+                    break;
+                enc.write(freq, b);
+                freq.increment(b);
+            }
+        }
+
+        @Override
+        public void finish() throws IOException
+        {
+            enc.write(freq, 256);  // EOF
+            enc.finish();
+        }
+
+        @Override
+        public Compressor clone()
+        {
+            return new AdaptiveArithmeticCompressor(output);
+        }
+    }
+
+    @Override
+    public Compressor newCompressor(OutputStream output)
+    {
+        return new AdaptiveArithmeticCompressor(output);
+    }
+
+    //public byte[] compress(byte[] b) {
+    //    InputStream in = new ByteArrayInputStream(b);
+    //    ByteArrayOutputStream out = new ByteArrayOutputStream();
+
+    //    BitOutputStream bitOut = new BitOutputStream(out);
+    //    AdaptiveArithmeticCompress.compress(in, bitOut);
+    //    bitOut.close();
+
+    //    return out.toByteArray();
+    //}
+
+    @Override
+    public byte[] decompress(byte[] b)
         throws IOException
     {
-		InputStream in = new ByteArrayInputStream(b);
-		ByteArrayOutputStream out = null;
- 
-		//try {
-			out = new ByteArrayOutputStream();
-			AdaptiveArithmeticDecompress.decompress(new BitInputStream(in), out);
-		//} catch (IOException e) {
-		//	e.printStackTrace();
-		//}
+        InputStream in = new ByteArrayInputStream(b);
+        ByteArrayOutputStream out = null;
 
-		return out.toByteArray();
-	}
-	
+        out = new ByteArrayOutputStream();
+        AdaptiveArithmeticDecompress.decompress(new BitInputStream(in), out);
+
+        return out.toByteArray();
+    }
 }

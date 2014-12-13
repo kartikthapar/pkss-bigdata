@@ -1,27 +1,26 @@
 package edu.jhu.pkss.compression;
+
 import java.io.UnsupportedEncodingException;
-import nayuki.arithcode.AdaptiveArithmeticImpl;
+import edu.jhu.pkss.compression.AdaptiveArithmeticImpl;
 import java.nio.ByteBuffer;
 import java.io.IOException;
-
-/**
- * Hello world!
- */
 
 public class Main
 {
     public static void main( String[] args ) throws IOException
     {
-    	OurLz4Impl lz = new OurLz4Impl();
-	AdaptiveArithmeticImpl a = new AdaptiveArithmeticImpl();
-	
-	byte[] compressed = lz.compress(intToByteArray(1234));
-	byte[] decompressed = lz.decompress(compressed);
-	System.out.println("Lz4 compression (should be 1234): " + Integer.toString(fromByteArray(decompressed)));
-	
-	byte[] a_compressed = a.compress(double2Byte(new double[]{1234.5678}));
-	byte[] a_decompressed = a.decompress(a_compressed);
-	System.out.println("Adaptative Arithmetic compression (should be 1234.5678): " + Double.toString(toDouble(a_decompressed)));
+        OurLz4Impl lz = new OurLz4Impl();
+        AdaptiveArithmeticImpl a = new AdaptiveArithmeticImpl();
+
+        byte[] compressed = lz.compress(intToByteArray(1234));
+        byte[] decompressed = lz.decompress(compressed);
+        System.out.println("Lz4 compression (should be 1234): " + Integer.toString(fromByteArray(decompressed)));
+
+        // FIXME with the new compression scheme interface
+        // byte[] a_compressed = a.compress(double2Byte(new double[]{1234.5678}));
+        // byte[] a_decompressed = a.decompress(a_compressed);
+        //System.out.println("Adaptative Arithmetic compression (should be 1234.5678): " + Double.toString(toDouble(a_decompressed)));
+        System.out.println("Did not run the Adaptive Arithmetic compression test.");
    }
 
 public static final byte[] double2Byte(double[] inData) {

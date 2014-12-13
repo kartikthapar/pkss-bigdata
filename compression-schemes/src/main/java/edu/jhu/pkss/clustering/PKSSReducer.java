@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.io.UnsupportedEncodingException;
 import java.io.IOException;
-import nayuki.arithcode.AdaptiveArithmeticImpl;
+import edu.jhu.pkss.compression.AdaptiveArithmeticImpl;
 import edu.jhu.pkss.compression.OurLz4Impl;
 import org.apache.tools.bzip2.*;
 
@@ -141,8 +141,9 @@ public class PKSSReducer extends Reducer<LongWritable, Text, LongWritable, Text>
                 //may need to be slightly refactored
                 switch(conf.get("compression")) {
                     case "arith":
-                        AdaptiveArithmeticImpl arith = new AdaptiveArithmeticImpl();
-                        compressed = arith.compress(currentData.toString().getBytes("UTF-8"));
+                        //AdaptiveArithmeticImpl arith = new AdaptiveArithmeticImpl();
+                        // TODO the actual compression and stuff
+                        // compressed = arith.compress(currentData.toString().getBytes("UTF-8"));
 			break;
                     case "lz4":
                         OurLz4Impl lz = new OurLz4Impl();

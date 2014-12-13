@@ -33,7 +33,7 @@ public class AdaptiveArithmeticDecompress {
 	}
 	
 	
-	static void decompress(BitInputStream in, OutputStream out) throws IOException {
+	public static void decompress(BitInputStream in, OutputStream out) throws IOException {
 		FrequencyTable freq = new SimpleFrequencyTable(new FlatFrequencyTable(257));  // Initialize with all symbol frequencies at 1
 		ArithmeticDecoder dec = new ArithmeticDecoder(in);
 		while (true) {

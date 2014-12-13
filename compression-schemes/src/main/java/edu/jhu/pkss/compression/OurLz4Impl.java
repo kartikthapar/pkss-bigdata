@@ -11,6 +11,12 @@ public class OurLz4Impl implements CompressionScheme{
 		factory = LZ4Factory.fastestInstance();
 	}
 
+    public Compressor newCompressor(java.io.OutputStream output)
+    {
+        // TODO implement LZ4 under new compressionscheme
+        return null;
+    }
+
 	public byte[] compress(byte[] data) {
 		decompressedLength = data.length;
 		LZ4Compressor compressor = factory.fastCompressor();
