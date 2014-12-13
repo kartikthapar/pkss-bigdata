@@ -73,7 +73,7 @@ public class Reducer extends org.apache.hadoop.mapreduce.Reducer<LongWritable, T
     private static byte[] bytesForData(VectorizedObject obj)
         throws IOException
     {
-        return obj.writeOut().getBytes("UTF-8");
+        return (obj.writeOut() + "\n").getBytes("UTF-8");
     }
 
     @Override
