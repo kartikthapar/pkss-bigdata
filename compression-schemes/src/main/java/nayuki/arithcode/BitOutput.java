@@ -10,7 +10,7 @@ import java.io.OutputStream;
 public interface BitOutput {
 	
 	// Writes a bit to the stream. The specified bit must be 0 or 1.
-	public void write(int b) throws IOException;
+	public void writeBit(int b) throws IOException;
 	
 	
 	// Closes this stream and the underlying OutputStream. If called when this bit stream is not at a byte boundary,

@@ -37,18 +37,18 @@ public final class ArithmeticEncoder extends ArithmeticCoderBase {
 	
 	// Must be called at the end of the stream of input symbols, otherwise the output data cannot be decoded properly.
 	public void finish() throws IOException {
-		output.write(1);
+		output.writeBit(1);
 	}
 	
 	
 	
 	protected void shift() throws IOException {
 		int bit = (int)(low >>> (STATE_SIZE - 1));
-		output.write(bit);
+		output.writeBit(bit);
 		
 		// Write out saved underflow bits
 		for (; underflow > 0; underflow--)
-			output.write(bit ^ 1);
+			output.writeBit(bit ^ 1);
 	}
 	
 	
