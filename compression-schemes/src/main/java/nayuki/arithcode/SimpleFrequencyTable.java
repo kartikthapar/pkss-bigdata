@@ -201,4 +201,9 @@ public final class SimpleFrequencyTable implements FrequencyTable {
 			return z;
 	}
 	
+    @Override
+    public FrequencyTable dup()
+    {
+        return new SimpleFrequencyTable(frequencies);
+    }
 }

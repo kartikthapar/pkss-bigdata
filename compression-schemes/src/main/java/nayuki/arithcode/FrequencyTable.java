@@ -59,4 +59,6 @@ public interface FrequencyTable {
 	 */
 	public int getHigh(int symbol);
 	
+
+    public FrequencyTable dup();
 }

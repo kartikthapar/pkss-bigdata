@@ -53,9 +53,12 @@ public class AdaptiveArithmeticImpl implements CompressionScheme
         }
 
         @Override
-        public Compressor clone()
+        public Compressor dup()
         {
-            return new AdaptiveArithmeticCompressor(output);
+            AdaptiveArithmeticCompressor result = new AdaptiveArithmeticCompressor(output);
+            result.freq = this.freq.dup();
+            result.enc = this.enc.dup();
+            return result;
         }
     }
 

@@ -91,4 +91,9 @@ public final class CheckedFrequencyTable implements FrequencyTable {
 			throw new IllegalArgumentException("Symbol out of range");
 	}
 	
+    @Override
+    public FrequencyTable dup()
+    {
+        return new CheckedFrequencyTable(freqTable.dup());
+    }
 }

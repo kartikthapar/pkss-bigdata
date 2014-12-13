@@ -111,12 +111,12 @@ public class Reducer extends org.apache.hadoop.mapreduce.Reducer<LongWritable, T
                 // Try to write this data point into the block.
                 byte[] currentBytes = bytesForData(curDataPoint);
                 BitBuffer.Marker cleanMark = bitBuffer.mark();
-                Compressor cleanCompressor = compressor.clone();
+                Compressor cleanCompressor = compressor.dup();
                 try {
                     compressor.compress(currentBytes);
 
                     BitBuffer.Marker nextMark = bitBuffer.mark();
-                    Compressor nextCompressor = compressor.clone();
+                    Compressor nextCompressor = compressor.dup();
 
                     // Make sure that we have enough room to close the stream
                     // within the block before committing to putting this

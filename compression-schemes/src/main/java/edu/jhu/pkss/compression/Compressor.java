@@ -6,5 +6,5 @@ public interface Compressor
 {
     public void compress(byte[] data) throws IOException;
     public void finish() throws IOException;
-    public Compressor clone();
+    public Compressor dup();
 }

@@ -58,4 +58,11 @@ public final class ArithmeticEncoder extends ArithmeticCoderBase {
 		underflow++;
 	}
 	
+    public ArithmeticEncoder dup()
+    {
+        ArithmeticEncoder result = new ArithmeticEncoder(output);
+        result.underflow = this.underflow;
+        return result;
+    }
+
 }

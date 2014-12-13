@@ -110,4 +110,8 @@ public final class FlatFrequencyTable implements FrequencyTable {
 		throw new UnsupportedOperationException();
 	}
 	
+    @Override
+    public FrequencyTable dup() {
+        return new FlatFrequencyTable(numSymbols);
+    }
 }
