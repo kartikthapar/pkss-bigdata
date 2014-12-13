@@ -68,8 +68,21 @@ public class BitBuffer implements BitOutput
         currentByte = m.bitValue;
     }
 
+    public void rewind()
+    {
+        buffer.rewind();
+        numBitsInCurrentByte = 0;
+        currentByte = 0;
+    }
+
     public ByteBuffer getBuffer()
     {
         return buffer;
+    }
+
+
+    public boolean empty()
+    {
+        return numBitsInCurrentByte == 0 && buffer.position() == 0;
     }
 }
