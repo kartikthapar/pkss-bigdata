@@ -2,7 +2,9 @@ package edu.jhu.pkss.compression;
 
 import net.jpountz.lz4.*;
 
-public class OurLz4Impl implements CompressionScheme{
+// FIXME update this class to use BitBuffers
+/*public class OurLz4Impl implements CompressionScheme
+{
 	private int decompressedLength;
 	private int compressedLength;
 	private LZ4Factory factory;
@@ -33,4 +35,4 @@ public class OurLz4Impl implements CompressionScheme{
 		int compressedLength2 = decompressor.decompress(compressed_data, 0, restored, 0, decompressedLength);
 		return restored;
 	}
-}
+}*/

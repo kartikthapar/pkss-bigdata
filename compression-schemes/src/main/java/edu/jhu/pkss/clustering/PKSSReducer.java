@@ -13,8 +13,6 @@ import java.util.ArrayList;
 import java.io.UnsupportedEncodingException;
 import java.io.IOException;
 import edu.jhu.pkss.compression.AdaptiveArithmeticImpl;
-import edu.jhu.pkss.compression.OurLz4Impl;
-import org.apache.tools.bzip2.*;
 
 public class PKSSReducer extends Reducer<LongWritable, Text, LongWritable, Text>
 {
@@ -146,8 +144,9 @@ public class PKSSReducer extends Reducer<LongWritable, Text, LongWritable, Text>
                         // compressed = arith.compress(currentData.toString().getBytes("UTF-8"));
 			break;
                     case "lz4":
-                        OurLz4Impl lz = new OurLz4Impl();
-                        compressed = lz.compress(currentData.toString().getBytes("UTF-8"));
+                        // TODO bring LZ4 into the new compressionscheme
+                        //OurLz4Impl lz = new OurLz4Impl();
+                        //compressed = lz.compress(currentData.toString().getBytes("UTF-8"));
                         break;
 
                     case "bzip2":

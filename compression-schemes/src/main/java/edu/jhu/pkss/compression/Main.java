@@ -9,12 +9,13 @@ public class Main
 {
     public static void main( String[] args ) throws IOException
     {
-        OurLz4Impl lz = new OurLz4Impl();
+        //OurLz4Impl lz = new OurLz4Impl();
         AdaptiveArithmeticImpl a = new AdaptiveArithmeticImpl();
 
-        byte[] compressed = lz.compress(intToByteArray(1234));
-        byte[] decompressed = lz.decompress(compressed);
-        System.out.println("Lz4 compression (should be 1234): " + Integer.toString(fromByteArray(decompressed)));
+        //byte[] compressed = lz.compress(intToByteArray(1234));
+        //byte[] decompressed = lz.decompress(compressed);
+        //System.out.println("Lz4 compression (should be 1234): " + Integer.toString(fromByteArray(decompressed)));
+        System.out.println("Did not run the LZ4 compression test.");
 
         // FIXME with the new compression scheme interface
         // byte[] a_compressed = a.compress(double2Byte(new double[]{1234.5678}));
