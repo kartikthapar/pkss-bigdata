@@ -25,17 +25,19 @@ public class Reducer extends org.apache.hadoop.mapreduce.Reducer<LongWritable, T
     // assigned to that cluster
     private org.apache.hadoop.fs.Path assignment_dir;
     private Configuration conf;
-    private long currentBlockAmount;
+    private long currentUncompressedBytes;
     private int currentNumElements;
     private long blockSize;
     private BitBuffer bitBuffer;
     private CompressionScheme scheme;
     private Compressor compressor;
     private boolean writeAssignments;
+    private FSDataOutputStream assign_strm;
 
     public static final String ASSIGNMENT_OUTPUT_DIR_KEY = "assignmentOutput";
     public static final String ASSIGNMENT_OUTPUT_KEY = "writeAssignments";
     public static final short REPLICATION_FACTOR = 1;
+    public static final int HEADER_SIZE = 16;
 
     @Override
     protected void setup(Context context)
@@ -49,7 +51,7 @@ public class Reducer extends org.apache.hadoop.mapreduce.Reducer<LongWritable, T
 
         if (writeAssignments)
         {
-            bitBuffer = new BitBuffer(ByteBuffer.allocate((int)blockSize));
+            bitBuffer = new BitBuffer(ByteBuffer.allocate((int)blockSize - HEADER_SIZE));
 
             switch(conf.get("compression")) {
                 case "arith":
@@ -68,6 +70,12 @@ public class Reducer extends org.apache.hadoop.mapreduce.Reducer<LongWritable, T
         }
     }
 
+    private static byte[] bytesForData(VectorizedObject obj)
+        throws IOException
+    {
+        return obj.writeOut().getBytes("UTF-8");
+    }
+
     @Override
     public void reduce(LongWritable key, Iterable<Text> Value, Context context)
         throws java.io.IOException, InterruptedException
@@ -75,7 +83,6 @@ public class Reducer extends org.apache.hadoop.mapreduce.Reducer<LongWritable, T
         long counter = 0;
         VectorizedObject thisCluster = null;
 
-        FSDataOutputStream assign_strm;
         if (writeAssignments)
         {
             FileSystem fs = FileSystem.get(context.getConfiguration());
@@ -102,19 +109,55 @@ public class Reducer extends org.apache.hadoop.mapreduce.Reducer<LongWritable, T
                 curDataPoint.setValue(key.toString());
 
                 // Try to write this data point into the block.
-                if (needToCreateNewBlock(curDataPoint.writeOut())) {
-                    writeCompressedBytes(assign_strm);
-                    resetVariables();
+                byte[] currentBytes = bytesForData(curDataPoint);
+                BitBuffer.Marker cleanMark = bitBuffer.mark();
+                Compressor cleanCompressor = compressor.clone();
+                try {
+                    compressor.compress(currentBytes);
+
+                    BitBuffer.Marker nextMark = bitBuffer.mark();
+                    Compressor nextCompressor = compressor.clone();
+
+                    // Make sure that we have enough room to close the stream
+                    // within the block before committing to putting this
+                    // data point in the stream
+                    compressor.finish();
+
+                    // If that succeeded, rewind to before the end of stream marker
+                    bitBuffer.rewind(nextMark);
+                    compressor = nextCompressor;
                 }
-                updateData(curDataPoint.writeOut());
+                catch (java.nio.BufferOverflowException e)
+                {
+                    // Ran out of space in this block, so flush it out and try again
+                    bitBuffer.rewind(cleanMark);
+                    cleanCompressor.finish();
+                    ByteBuffer byteBuffer = bitBuffer.getBuffer();
+                    for (int idx = byteBuffer.position(); idx < byteBuffer.limit(); ++idx)
+                    {
+                        byteBuffer.put((byte)0);
+                    }
+                    writeBuffer();
+
+                    bitBuffer.rewind();
+                    compressor = scheme.newCompressor(bitBuffer);
+                    resetVariables();
+                    // Trying again
+                    compressor.compress(currentBytes);
+
+                    // If this one fails, then that means that the compressed
+                    // data is larger than a block, and that's never going to
+                    // work.  Get bigger blocks.
+                }
             }
         }
 
 
         if (writeAssignments)
         {
-            if (currentData.length() > 0) {
-                writeCompressedBytes(assign_strm);
+            if (!bitBuffer.empty()) {
+                compressor.finish();
+                writeBuffer();
             }
 
             assign_strm.close();
@@ -126,35 +169,22 @@ public class Reducer extends org.apache.hadoop.mapreduce.Reducer<LongWritable, T
         context.write(key, outputBuffer);
     }
 
-   private void updateData(String datapoint) {
-        currentData.append(datapoint + "\n");
-        currentBlockAmount += datapoint.length() + 1;
-        currentNumElements++;
-   }
-
-
-   private void resetVariables() {
-        currentBlockAmount = 0;
-        currentNumElements = 0;
-        currentData = new StringBuilder();
-    }
-
-    private boolean needToCreateNewBlock(String data) {
-        return currentBlockAmount + data.length() + 1 > blockSize;
-    }
-
-    //Delimiter is newline (\n)
-    private void writeCompressedBytes(FSDataOutputStream stream)
-        throws IOException
+    private void writeBuffer() throws IOException
     {
-        byte[] compressed = null;// = new byte[(int)blockSize];
-        //may need to be slightly refactored
-        stream.writeInt(compressed.length);
-        stream.writeLong(currentBlockAmount);
-        stream.writeInt(currentNumElements);
-        stream.write(compressed, 0, compressed.length);
-        // FIXME this number is the length of the header
-        for (int i = compressed.length + 16; i < blockSize; ++i)
-            stream.write(0);
-	}
+        assign_strm.writeInt(bitBuffer.getBuffer().position());
+        assign_strm.writeLong(currentUncompressedBytes);
+        assign_strm.writeInt(currentNumElements);
+    }
+
+    private void updateData(String datapoint) {
+         currentUncompressedBytes += datapoint.length() + 1;
+         currentNumElements++;
+    }
+ 
+ 
+    private void resetVariables() {
+         currentUncompressedBytes = 0;
+         currentNumElements = 0;
+     }
+
 }
