@@ -5,7 +5,7 @@ import java.io.IOException;
 
 public final class ArithmeticEncoder extends ArithmeticCoderBase {
 	
-	private BitOutputStream output;
+	private BitOutput output;
 	
 	// Number of saved underflow bits. This value can grow without bound, so a truly correct implementation would use a BigInteger.
 	private int underflow;
@@ -13,7 +13,7 @@ public final class ArithmeticEncoder extends ArithmeticCoderBase {
 	
 	
 	// Creates an arithmetic coding encoder.
-	public ArithmeticEncoder(BitOutputStream out) {
+	public ArithmeticEncoder(BitOutput out) {
 		super();
 		if (out == null)
 			throw new NullPointerException();
