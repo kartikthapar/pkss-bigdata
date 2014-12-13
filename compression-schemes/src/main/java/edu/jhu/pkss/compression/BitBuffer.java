@@ -35,6 +35,12 @@ public class BitBuffer implements BitOutput
     {
 		if (!(b == 0 || b == 1))
 			throw new IllegalArgumentException("Argument must be 0 or 1");
+        // Throw the exception on the first bit that won't fit into the
+        // byteBuffer We could wait for the ByteBuffer to throw it, but that
+        // would be 8 bits after the backing store filled up, so that's
+        // probably the wrong choice
+        if (buffer.position() == buffer.limit())
+            throw new java.nio.BufferOverflowException();
 		currentByte = currentByte << 1 | b;
 		numBitsInCurrentByte++;
 		if (numBitsInCurrentByte == 8) {
